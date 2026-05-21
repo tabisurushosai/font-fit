@@ -1,6 +1,6 @@
 // popup.ts : 設定UI(フォント/行間/文字間/背景色/最大幅)。Geminiが実装する。
 
-import { Settings } from './content';
+import { Settings, applyStyle, removeStyle } from './content';
 
 const defaultSettings: Settings = {
   fontFamily: 'sans-serif',
@@ -122,12 +122,31 @@ function createUI(settings: Settings) {
   applyBtn.textContent = '適用';
   applyBtn.style.flex = '1';
   applyBtn.style.padding = '8px';
+  applyBtn.addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: applyStyle,
+        args: [settings]
+      });
+    }
+  });
   
   const resetBtn = document.createElement('button');
   resetBtn.id = 'reset-btn';
   resetBtn.textContent = '元に戻す';
   resetBtn.style.flex = '1';
   resetBtn.style.padding = '8px';
+  resetBtn.addEventListener('click', async () => {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id) {
+      await chrome.scripting.executeScript({
+        target: { tabId: tab.id },
+        func: removeStyle
+      });
+    }
+  });
 
   btnRow.appendChild(applyBtn);
   btnRow.appendChild(resetBtn);
