@@ -10,4 +10,4 @@
 - [x] T008: _locales ja/en の文言を全UIに適用(chrome.i18n)
 - [x] T009: npm run build を通し、tsエラー/lint警告を解消
 - [x] T010: release/font-fit.zip を生成(manifest+icons+_locales+dist、node_modules除外)
-- [ ] T011: legal/PRIVACY.md と TERMS.md を作成(外部通信なし・データ収集なしを明記)
+- [x] T011: legal/PRIVACY.md と TERMS.md を作成(外部通信なし・データ収集なしを明記)
