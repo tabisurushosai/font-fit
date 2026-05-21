@@ -5,7 +5,7 @@
 - [x] T003: popupの「適用」で chrome.scripting.executeScript により現在タブに content の applyStyle を実行、「元に戻す」で removeStyle
 - [x] T004: storage.local から前回設定を読み込みpopupに反映、起動時に復元
 - [x] T005: 同梱フォントスタック(UDゴシック代替→Hiragino/Meiryo/sans-serif)を定義、CDN不使用
-- [ ] T006: 背景色プリセット(白/クリーム/ダークグレー)と本文最大幅(640/760/全幅)を実装
+- [x] T006: 背景色プリセット(白/クリーム/ダークグレー)と本文最大幅(640/760/全幅)を実装
 - [ ] T007: Premiumゲート(7日トライアル+Stripe Checkout URL生成)を storage.local の trial_start_ts で実装。無料は基本動作、Premiumでプリセット3+とサイト別自動適用
 - [ ] T008: _locales ja/en の文言を全UIに適用(chrome.i18n)
 - [ ] T009: npm run build を通し、tsエラー/lint警告を解消
