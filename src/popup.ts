@@ -1,9 +1,9 @@
 // popup.ts : 設定UI(フォント/行間/文字間/背景色/最大幅)。Geminiが実装する。
 
-import { Settings, applyStyle, removeStyle } from './content';
+import { Settings, applyStyle, removeStyle, FONT_STACKS } from './content';
 
 const defaultSettings: Settings = {
-  fontFamily: 'sans-serif',
+  fontFamily: FONT_STACKS.UD_GOTHIC,
   fontSize: 1.2,
   lineHeight: 1.8,
   letterSpacing: 0.05,
@@ -34,9 +34,9 @@ function createUI(settings: Settings) {
   const fontLabel = createLabel('フォント');
   const fontSelect = document.createElement('select');
   [
-    { name: 'ゴシック (UD代替)', value: '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif' },
-    { name: 'サンセリフ', value: 'sans-serif' },
-    { name: 'セリフ', value: 'serif' }
+    { name: 'ゴシック (UD代替)', value: FONT_STACKS.UD_GOTHIC },
+    { name: 'サンセリフ', value: FONT_STACKS.SANS_SERIF },
+    { name: 'セリフ', value: FONT_STACKS.SERIF }
   ].forEach(opt => {
     const el = document.createElement('option');
     el.value = opt.value;

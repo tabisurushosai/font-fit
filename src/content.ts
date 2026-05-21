@@ -2,6 +2,12 @@
  * content.ts : ページ本文に可読性スタイルを適用/解除する。
  */
 
+export const FONT_STACKS = {
+  UD_GOTHIC: '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif',
+  SANS_SERIF: 'sans-serif',
+  SERIF: 'serif'
+};
+
 export interface Settings {
   fontFamily: string;
   fontSize: number;      // 倍率 (rem相当)
