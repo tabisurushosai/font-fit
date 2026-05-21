@@ -84,7 +84,9 @@ async function loadAutoApplySites(): Promise<string[]> {
 
 async function createUI(settings: Settings) {
   const app = document.getElementById('app');
+  const appTitle = document.getElementById('app-title');
   if (!app) return;
+  if (appTitle) appTitle.textContent = chrome.i18n.getMessage('appName');
   app.innerHTML = '';
 
   const premiumStatus = await getPremiumStatus();
@@ -107,25 +109,25 @@ async function createUI(settings: Settings) {
   if (premiumStatus.trialExpired) {
     premiumBanner.style.backgroundColor = '#ffebee';
     premiumBanner.style.color = '#c62828';
-    premiumBanner.innerHTML = `試用期間終了。機能制限中。<br><a href="https://checkout.stripe.com/pay/font-fit-premium" target="_blank" style="color:#c62828; font-weight:bold;">Premiumへアップグレード ($3)</a>`;
+    premiumBanner.innerHTML = `${chrome.i18n.getMessage('trialExpired')}<br><a href="https://checkout.stripe.com/pay/font-fit-premium" target="_blank" style="color:#c62828; font-weight:bold;">${chrome.i18n.getMessage('upgradePremium')}</a>`;
   } else if (premiumStatus.isTrialing) {
     premiumBanner.style.backgroundColor = '#e3f2fd';
     premiumBanner.style.color = '#1565c0';
-    premiumBanner.textContent = `Premium試用中 (残り ${premiumStatus.daysLeft} 日)`;
+    premiumBanner.textContent = chrome.i18n.getMessage('premiumTrial', [premiumStatus.daysLeft.toString()]);
   } else {
     premiumBanner.style.backgroundColor = '#e8f5e9';
     premiumBanner.style.color = '#2e7d32';
-    premiumBanner.textContent = 'Premium有効';
+    premiumBanner.textContent = chrome.i18n.getMessage('premiumActive');
   }
   container.appendChild(premiumBanner);
 
   // Font Family
-  const fontLabel = createLabel('フォント');
+  const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'));
   const fontSelect = document.createElement('select');
   [
-    { name: 'ゴシック (UD代替)', value: FONT_STACKS.UD_GOTHIC },
-    { name: 'サンセリフ', value: FONT_STACKS.SANS_SERIF },
-    { name: 'セリフ', value: FONT_STACKS.SERIF }
+    { name: chrome.i18n.getMessage('fontUD'), value: FONT_STACKS.UD_GOTHIC },
+    { name: chrome.i18n.getMessage('fontSans'), value: FONT_STACKS.SANS_SERIF },
+    { name: chrome.i18n.getMessage('fontSerif'), value: FONT_STACKS.SERIF }
   ].forEach(opt => {
     const el = document.createElement('option');
     el.value = opt.value;
@@ -141,15 +143,15 @@ async function createUI(settings: Settings) {
   container.appendChild(fontSelect);
 
   // Sliders
-  container.appendChild(createSliderSetting('文字サイズ', 0.8, 3.0, 0.1, settings.fontSize, (val) => {
+  container.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, (val) => {
     settings.fontSize = val;
     saveSettings(settings);
   }));
-  container.appendChild(createSliderSetting('行間', 1.0, 3.0, 0.1, settings.lineHeight, (val) => {
+  container.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, (val) => {
     settings.lineHeight = val;
     saveSettings(settings);
   }));
-  container.appendChild(createSliderSetting('文字間', 0, 0.5, 0.01, settings.letterSpacing, (val) => {
+  container.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, (val) => {
     settings.letterSpacing = val;
     saveSettings(settings);
   }));
@@ -161,10 +163,14 @@ async function createUI(settings: Settings) {
 
   const bgCol = document.createElement('div');
   bgCol.style.flex = '1';
-  bgCol.appendChild(createLabel('背景色'));
+  bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor')));
   const bgSelect = document.createElement('select');
   bgSelect.style.width = '100%';
-  [{ name: '白', value: '#ffffff' }, { name: 'クリーム', value: '#fdf5e6' }, { name: 'ダーク', value: '#333333' }].forEach(opt => {
+  [
+    { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
+    { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
+    { name: chrome.i18n.getMessage('bgDark'), value: '#333333' }
+  ].forEach(opt => {
     const el = document.createElement('option');
     el.value = opt.value; el.textContent = opt.name;
     if (opt.value === settings.backgroundColor) el.selected = true;
@@ -176,10 +182,14 @@ async function createUI(settings: Settings) {
 
   const widthCol = document.createElement('div');
   widthCol.style.flex = '1';
-  widthCol.appendChild(createLabel('最大幅'));
+  widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth')));
   const widthSelect = document.createElement('select');
   widthSelect.style.width = '100%';
-  [{ name: '640px', value: '640px' }, { name: '760px', value: '760px' }, { name: '全幅', value: 'none' }].forEach(opt => {
+  [
+    { name: '640px', value: '640px' },
+    { name: '760px', value: '760px' },
+    { name: chrome.i18n.getMessage('widthFull'), value: 'none' }
+  ].forEach(opt => {
     const el = document.createElement('option');
     el.value = opt.value; el.textContent = opt.name;
     if (opt.value === settings.maxWidth) el.selected = true;
@@ -194,7 +204,7 @@ async function createUI(settings: Settings) {
   const presetContainer = document.createElement('div');
   presetContainer.style.borderTop = '1px solid #eee';
   presetContainer.style.paddingTop = '8px';
-  presetContainer.appendChild(createLabel('プリセット'));
+  presetContainer.appendChild(createLabel(chrome.i18n.getMessage('presets')));
   
   const presetList = document.createElement('div');
   presetList.style.display = 'flex';
@@ -217,14 +227,14 @@ async function createUI(settings: Settings) {
   presetContainer.appendChild(presetList);
 
   const savePresetBtn = document.createElement('button');
-  savePresetBtn.textContent = '保存';
+  savePresetBtn.textContent = chrome.i18n.getMessage('save');
   savePresetBtn.style.fontSize = '10px';
   if (!premiumStatus.isPremium && presets.length >= 2) {
     savePresetBtn.disabled = true;
-    savePresetBtn.title = 'Premiumなら3つ以上保存可能';
+    savePresetBtn.title = chrome.i18n.getMessage('premiumForMorePresets');
   }
   savePresetBtn.addEventListener('click', async () => {
-    const name = prompt('名前:', `P${presets.length + 1}`);
+    const name = prompt(chrome.i18n.getMessage('presetNamePrompt'), `P${presets.length + 1}`);
     if (name) {
       presets.push({ name, settings: { ...settings } });
       await savePresets(presets);
@@ -243,7 +253,7 @@ async function createUI(settings: Settings) {
     aaCheck.checked = autoApplySites.includes(domain);
     if (!premiumStatus.isPremium) {
       aaCheck.disabled = true;
-      aaRow.title = 'Premium専用機能';
+      aaRow.title = chrome.i18n.getMessage('premiumOnly');
     }
     aaCheck.addEventListener('change', async () => {
       let sites = await loadAutoApplySites();
@@ -252,7 +262,7 @@ async function createUI(settings: Settings) {
       await chrome.storage.local.set({ autoApplySites: sites });
     });
     aaRow.appendChild(aaCheck);
-    aaRow.appendChild(document.createTextNode(` このサイトで自動適用 (Premium)`));
+    aaRow.appendChild(document.createTextNode(chrome.i18n.getMessage('autoApply')));
     container.appendChild(aaRow);
   }
 
@@ -262,7 +272,7 @@ async function createUI(settings: Settings) {
   btnRow.style.gap = '8px';
 
   const applyBtn = document.createElement('button');
-  applyBtn.textContent = '適用';
+  applyBtn.textContent = chrome.i18n.getMessage('apply');
   applyBtn.style.flex = '1';
   applyBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -272,7 +282,7 @@ async function createUI(settings: Settings) {
   });
   
   const resetBtn = document.createElement('button');
-  resetBtn.textContent = '元に戻す';
+  resetBtn.textContent = chrome.i18n.getMessage('reset');
   resetBtn.style.flex = '1';
   resetBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
