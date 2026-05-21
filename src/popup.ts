@@ -201,6 +201,11 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const settings = await loadSettings();
-  createUI(settings);
+  try {
+    const settings = await loadSettings();
+    createUI(settings);
+  } catch (error) {
+    console.error('Failed to load settings:', error);
+    createUI(defaultSettings);
+  }
 });
