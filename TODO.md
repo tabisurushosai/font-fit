@@ -1,7 +1,7 @@
 # font-fit TODO
 
 - [x] T001: src/content.ts に、本文要素を検出してスタイル(フォント/サイズ/行間/文字間/背景/最大幅)を注入する applyStyle(settings) と removeStyle() を実装
-- [ ] T002: src/popup.ts に設定UI(各スライダー/セレクト)を実装し、変更を chrome.storage.local に保存
+- [x] T002: src/popup.ts に設定UI(各スライダー/セレクト)を実装し、変更を chrome.storage.local に保存
 - [ ] T003: popupの「適用」で chrome.scripting.executeScript により現在タブに content の applyStyle を実行、「元に戻す」で removeStyle
 - [ ] T004: storage.local から前回設定を読み込みpopupに反映、起動時に復元
 - [ ] T005: 同梱フォントスタック(UDゴシック代替→Hiragino/Meiryo/sans-serif)を定義、CDN不使用
