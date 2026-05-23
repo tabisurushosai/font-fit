@@ -2,25 +2,14 @@
  * content.ts : ページ本文に可読性スタイルを適用/解除する。
  */
 
-export const FONT_STACKS = {
-  UD_GOTHIC: '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif',
-  SANS_SERIF: 'sans-serif',
-  SERIF: 'serif'
-};
+export { FONT_STACKS, type Settings } from './core/settings';
 
-export interface Settings {
-  fontFamily: string;
-  fontSize: number;      // 倍率 (rem相当)
-  lineHeight: number;    // 行間
-  letterSpacing: number; // 文字間 (em)
-  backgroundColor: string; // 背景色 (hex)
-  maxWidth: string;      // 本文最大幅 (px or 'none')
-}
+import type { Settings as FontFitSettings } from './core/settings';
 
 /**
  * 本文要素を検出してスタイルを注入する
  */
-export function applyStyle(settings: Settings) {
+export function applyStyle(settings: FontFitSettings) {
   const STYLE_ID = 'font-fit-style';
   const ACTIVE_CLASS = 'font-fit-active';
 

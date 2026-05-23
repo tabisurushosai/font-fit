@@ -1,39 +1,20 @@
 // popup.ts : 設定UI(フォント/行間/文字間/背景色/最大幅)。
 
-import { Settings, applyStyle, removeStyle, FONT_STACKS } from './content';
-
-const defaultSettings: Settings = {
-  fontFamily: FONT_STACKS.UD_GOTHIC,
-  fontSize: 1.2,
-  lineHeight: 1.8,
-  letterSpacing: 0.05,
-  backgroundColor: '#ffffff',
-  maxWidth: '760px'
-};
+import { applyStyle, removeStyle } from './content';
+import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Preset, type Settings } from './core/settings';
+import { createChromeStorageAdapter } from './storage/chromeStorage';
 
 const STATUS_TIMEOUT_MS = 1800;
 let statusTimer: number | undefined;
 let controlIdSequence = 0;
-
-type Preset = {
-  name: string;
-  settings: Settings;
-};
-
-type PremiumStatus = {
-  isPremium: boolean;
-  isTrialing: boolean;
-  daysLeft: number;
-  trialExpired: boolean;
-};
+const storage = createChromeStorageAdapter();
 
 async function loadSettings(): Promise<Settings> {
-  const data = await chrome.storage.local.get('settings');
-  return { ...defaultSettings, ...data.settings };
+  return storage.loadSettings();
 }
 
 async function saveSettings(settings: Settings) {
-  await chrome.storage.local.set({ settings });
+  await storage.saveSettings(settings);
 }
 
 function showStatus(statusEl: HTMLElement, message: string) {
@@ -57,36 +38,24 @@ function createControlId(prefix: string): string {
 }
 
 async function getPremiumStatus(): Promise<PremiumStatus> {
-  const data = await chrome.storage.local.get(['is_premium', 'trial_start_ts']);
+  const premiumState = await storage.loadPremiumState();
   const now = Date.now();
-  const sevenDays = 7 * 24 * 60 * 60 * 1000;
-  
-  let trialStart = data.trial_start_ts;
+
+  let trialStart = premiumState.trialStartTs;
   if (!trialStart) {
     trialStart = now;
-    await chrome.storage.local.set({ trial_start_ts: trialStart });
+    await storage.saveTrialStartTs(trialStart);
   }
 
-  const trialExpiresAt = trialStart + sevenDays;
-  const isTrialing = now < trialExpiresAt;
-  const isPremium = !!data.is_premium || isTrialing;
-  const daysLeft = Math.ceil((trialExpiresAt - now) / (24 * 60 * 60 * 1000));
-
-  return { 
-    isPremium, 
-    isTrialing: isTrialing && !data.is_premium, 
-    daysLeft: isTrialing ? daysLeft : 0,
-    trialExpired: !isTrialing && !data.is_premium
-  };
+  return resolvePremiumStatus({ ...premiumState, trialStartTs: trialStart }, now);
 }
 
 async function loadPresets(): Promise<Preset[]> {
-  const data = await chrome.storage.local.get('presets');
-  return data.presets || [];
+  return storage.loadPresets();
 }
 
 async function savePresets(presets: Preset[]) {
-  await chrome.storage.local.set({ presets });
+  await storage.savePresets(presets);
 }
 
 async function getCurrentDomain(): Promise<string> {
@@ -102,8 +71,7 @@ async function getCurrentDomain(): Promise<string> {
 }
 
 async function loadAutoApplySites(): Promise<string[]> {
-  const data = await chrome.storage.local.get('autoApplySites');
-  return data.autoApplySites || [];
+  return storage.loadAutoApplySites();
 }
 
 async function createUI(settings: Settings, initialStatusMessage = '') {
@@ -315,7 +283,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
       let sites = await loadAutoApplySites();
       if (aaCheck.checked) { if (!sites.includes(domain)) sites.push(domain); }
       else { sites = sites.filter(s => s !== domain); }
-      await chrome.storage.local.set({ autoApplySites: sites });
+      await storage.saveAutoApplySites(sites);
       showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
     });
     aaRow.appendChild(aaCheck);
