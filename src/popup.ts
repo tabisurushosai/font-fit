@@ -1,10 +1,12 @@
 // popup.ts : 設定UI(フォント/行間/文字間/背景色/最大幅)。
 
 import { applyStyle, removeStyle } from './content';
+import { formatFixedDecimal, formatInteger, fractionDigitsForStep } from './core/format';
 import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Preset, type Settings } from './core/settings';
 import { createChromeStorageAdapter } from './storage/chromeStorage';
 
 const STATUS_TIMEOUT_MS = 1800;
+const FREE_PRESET_LIMIT = 2;
 let statusTimer: number | undefined;
 let controlIdSequence = 0;
 const storage = createChromeStorageAdapter();
@@ -35,6 +37,10 @@ function saveSettingsWithStatus(settings: Settings, statusEl: HTMLElement) {
 function createControlId(prefix: string): string {
   controlIdSequence += 1;
   return `font-fit-${prefix}-${controlIdSequence}`;
+}
+
+function getUiLocale(): string {
+  return chrome.i18n.getUILanguage?.() || navigator.language || 'ja';
 }
 
 async function getPremiumStatus(): Promise<PremiumStatus> {
@@ -87,6 +93,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   const presets = await loadPresets();
   const domain = await getCurrentDomain();
   const autoApplySites = await loadAutoApplySites();
+  const uiLocale = getUiLocale();
 
   const container = document.createElement('div');
   container.className = 'popup-panel';
@@ -109,7 +116,8 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
     );
   } else if (premiumStatus.isTrialing) {
     premiumBanner.classList.add('banner--info');
-    premiumBanner.textContent = chrome.i18n.getMessage('premiumTrial', [premiumStatus.daysLeft.toString()]);
+    const trialMessageKey = premiumStatus.daysLeft === 1 ? 'premiumTrialOne' : 'premiumTrialOther';
+    premiumBanner.textContent = chrome.i18n.getMessage(trialMessageKey, [formatInteger(premiumStatus.daysLeft, uiLocale)]);
   } else {
     premiumBanner.classList.add('banner--success');
     premiumBanner.textContent = chrome.i18n.getMessage('premiumActive');
@@ -148,15 +156,15 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   container.appendChild(fontSelect);
 
   // Sliders
-  container.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, (val) => {
+  container.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, (val) => {
     settings.fontSize = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
-  container.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, (val) => {
+  container.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, uiLocale, (val) => {
     settings.lineHeight = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
-  container.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, (val) => {
+  container.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, uiLocale, (val) => {
     settings.letterSpacing = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
@@ -191,8 +199,8 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   widthSelect.id = createControlId('max-width');
   widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth'), widthSelect.id));
   [
-    { name: '640px', value: '640px' },
-    { name: '760px', value: '760px' },
+    { name: chrome.i18n.getMessage('pixelValue', [formatInteger(640, uiLocale)]), value: '640px' },
+    { name: chrome.i18n.getMessage('pixelValue', [formatInteger(760, uiLocale)]), value: '760px' },
     { name: chrome.i18n.getMessage('widthFull'), value: 'none' }
   ].forEach(opt => {
     const el = document.createElement('option');
@@ -243,13 +251,15 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   savePresetBtn.type = 'button';
   savePresetBtn.textContent = chrome.i18n.getMessage('save');
   savePresetBtn.className = 'compact';
-  if (!premiumStatus.isPremium && presets.length >= 2) {
+  if (!premiumStatus.isPremium && presets.length >= FREE_PRESET_LIMIT) {
+    const morePresetsMessage = chrome.i18n.getMessage('premiumForMorePresets', [formatInteger(FREE_PRESET_LIMIT + 1, uiLocale)]);
     savePresetBtn.disabled = true;
-    savePresetBtn.title = chrome.i18n.getMessage('premiumForMorePresets');
-    savePresetBtn.setAttribute('aria-label', `${chrome.i18n.getMessage('save')} - ${chrome.i18n.getMessage('premiumForMorePresets')}`);
+    savePresetBtn.title = morePresetsMessage;
+    savePresetBtn.setAttribute('aria-label', `${chrome.i18n.getMessage('save')} - ${morePresetsMessage}`);
   }
   savePresetBtn.addEventListener('click', async () => {
-    const name = prompt(chrome.i18n.getMessage('presetNamePrompt'), `P${presets.length + 1}`);
+    const presetNumber = formatInteger(presets.length + 1, uiLocale);
+    const name = prompt(chrome.i18n.getMessage('presetNamePrompt'), chrome.i18n.getMessage('defaultPresetName', [presetNumber]));
     if (name) {
       presets.push({ name, settings: { ...settings } });
       await savePresets(presets);
@@ -340,27 +350,29 @@ function createSectionTitle(text: string): HTMLHeadingElement {
   return title;
 }
 
-function createSliderSetting(label: string, min: number, max: number, step: number, value: number, onChange: (val: number) => void): HTMLElement {
+function createSliderSetting(label: string, min: number, max: number, step: number, value: number, locale: string, onChange: (val: number) => void): HTMLElement {
   const wrapper = document.createElement('div');
   const row = document.createElement('div');
   row.className = 'slider-row';
+  const formatSliderValue = (sliderValue: number) => formatFixedDecimal(sliderValue, locale, fractionDigitsForStep(step));
 
   const slider = document.createElement('input');
   slider.id = createControlId('slider');
   slider.type = 'range';
   slider.min = min.toString(); slider.max = max.toString(); slider.step = step.toString();
   slider.value = value.toString();
-  slider.setAttribute('aria-valuetext', value.toFixed(2));
+  slider.setAttribute('aria-valuetext', formatSliderValue(value));
   wrapper.appendChild(createLabel(label, slider.id));
 
   const valDisp = document.createElement('span');
-  valDisp.textContent = value.toFixed(2);
+  valDisp.textContent = formatSliderValue(value);
   valDisp.className = 'value-pill';
 
   slider.addEventListener('input', () => {
     const val = parseFloat(slider.value);
-    valDisp.textContent = val.toFixed(2);
-    slider.setAttribute('aria-valuetext', val.toFixed(2));
+    const formattedValue = formatSliderValue(val);
+    valDisp.textContent = formattedValue;
+    slider.setAttribute('aria-valuetext', formattedValue);
     onChange(val);
   });
 
