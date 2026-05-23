@@ -13,6 +13,7 @@ const defaultSettings: Settings = {
 
 const STATUS_TIMEOUT_MS = 1800;
 let statusTimer: number | undefined;
+let controlIdSequence = 0;
 
 type Preset = {
   name: string;
@@ -48,6 +49,11 @@ function saveSettingsWithStatus(settings: Settings, statusEl: HTMLElement) {
   void saveSettings(settings).then(() => {
     showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
   });
+}
+
+function createControlId(prefix: string): string {
+  controlIdSequence += 1;
+  return `font-fit-${prefix}-${controlIdSequence}`;
 }
 
 async function getPremiumStatus(): Promise<PremiumStatus> {
@@ -120,9 +126,19 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   // Premium Banner
   const premiumBanner = document.createElement('div');
   premiumBanner.className = 'banner';
+  premiumBanner.setAttribute('role', premiumStatus.trialExpired ? 'alert' : 'note');
   if (premiumStatus.trialExpired) {
     premiumBanner.classList.add('banner--danger');
-    premiumBanner.innerHTML = `${chrome.i18n.getMessage('trialExpired')}<br><a href="https://checkout.stripe.com/pay/font-fit-premium" target="_blank">${chrome.i18n.getMessage('upgradePremium')}</a>`;
+    const upgradeLink = document.createElement('a');
+    upgradeLink.href = 'https://checkout.stripe.com/pay/font-fit-premium';
+    upgradeLink.target = '_blank';
+    upgradeLink.rel = 'noopener noreferrer';
+    upgradeLink.textContent = chrome.i18n.getMessage('upgradePremium');
+    premiumBanner.append(
+      document.createTextNode(chrome.i18n.getMessage('trialExpired')),
+      document.createElement('br'),
+      upgradeLink
+    );
   } else if (premiumStatus.isTrialing) {
     premiumBanner.classList.add('banner--info');
     premiumBanner.textContent = chrome.i18n.getMessage('premiumTrial', [premiumStatus.daysLeft.toString()]);
@@ -135,13 +151,16 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   const statusEl = document.createElement('p');
   statusEl.className = 'status-message';
   statusEl.setAttribute('role', 'status');
+  statusEl.setAttribute('aria-live', 'polite');
+  statusEl.setAttribute('aria-atomic', 'true');
   statusEl.hidden = true;
   container.appendChild(statusEl);
   if (initialStatusMessage) showStatus(statusEl, initialStatusMessage);
 
   // Font Family
-  const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'));
   const fontSelect = document.createElement('select');
+  fontSelect.id = createControlId('font-family');
+  const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'), fontSelect.id);
   [
     { name: chrome.i18n.getMessage('fontUD'), value: FONT_STACKS.UD_GOTHIC },
     { name: chrome.i18n.getMessage('fontSans'), value: FONT_STACKS.SANS_SERIF },
@@ -179,8 +198,9 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   row2.className = 'form-row';
 
   const bgCol = document.createElement('div');
-  bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor')));
   const bgSelect = document.createElement('select');
+  bgSelect.id = createControlId('background-color');
+  bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor'), bgSelect.id));
   [
     { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
     { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
@@ -199,8 +219,9 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   row2.appendChild(bgCol);
 
   const widthCol = document.createElement('div');
-  widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth')));
   const widthSelect = document.createElement('select');
+  widthSelect.id = createControlId('max-width');
+  widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth'), widthSelect.id));
   [
     { name: '640px', value: '640px' },
     { name: '760px', value: '760px' },
@@ -222,7 +243,9 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   // Presets Section
   const presetContainer = document.createElement('div');
   presetContainer.className = 'section';
-  presetContainer.appendChild(createLabel(chrome.i18n.getMessage('presets')));
+  const presetTitle = createSectionTitle(chrome.i18n.getMessage('presets'));
+  presetContainer.setAttribute('aria-labelledby', presetTitle.id);
+  presetContainer.appendChild(presetTitle);
   
   const presetList = document.createElement('div');
   presetList.className = 'preset-list';
@@ -236,6 +259,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
 
   presets.forEach((p) => {
     const pBtn = document.createElement('button');
+    pBtn.type = 'button';
     pBtn.textContent = p.name;
     pBtn.className = 'secondary compact';
     pBtn.addEventListener('click', async () => {
@@ -248,11 +272,13 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   presetContainer.appendChild(presetList);
 
   const savePresetBtn = document.createElement('button');
+  savePresetBtn.type = 'button';
   savePresetBtn.textContent = chrome.i18n.getMessage('save');
   savePresetBtn.className = 'compact';
   if (!premiumStatus.isPremium && presets.length >= 2) {
     savePresetBtn.disabled = true;
     savePresetBtn.title = chrome.i18n.getMessage('premiumForMorePresets');
+    savePresetBtn.setAttribute('aria-label', `${chrome.i18n.getMessage('save')} - ${chrome.i18n.getMessage('premiumForMorePresets')}`);
   }
   savePresetBtn.addEventListener('click', async () => {
     const name = prompt(chrome.i18n.getMessage('presetNamePrompt'), `P${presets.length + 1}`);
@@ -270,11 +296,20 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
     const aaRow = document.createElement('div');
     aaRow.className = 'auto-apply-row';
     const aaCheck = document.createElement('input');
+    aaCheck.id = createControlId('auto-apply');
     aaCheck.type = 'checkbox';
     aaCheck.checked = autoApplySites.includes(domain);
+    const aaLabel = createLabel(chrome.i18n.getMessage('autoApply'), aaCheck.id);
+    aaLabel.className = 'checkbox-label';
     if (!premiumStatus.isPremium) {
       aaCheck.disabled = true;
       aaRow.title = chrome.i18n.getMessage('premiumOnly');
+      const premiumOnlyNote = document.createElement('span');
+      premiumOnlyNote.id = createControlId('premium-only-note');
+      premiumOnlyNote.className = 'visually-hidden';
+      premiumOnlyNote.textContent = chrome.i18n.getMessage('premiumOnly');
+      aaCheck.setAttribute('aria-describedby', premiumOnlyNote.id);
+      aaRow.appendChild(premiumOnlyNote);
     }
     aaCheck.addEventListener('change', async () => {
       let sites = await loadAutoApplySites();
@@ -284,7 +319,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
       showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
     });
     aaRow.appendChild(aaCheck);
-    aaRow.appendChild(document.createTextNode(chrome.i18n.getMessage('autoApply')));
+    aaRow.appendChild(aaLabel);
     container.appendChild(aaRow);
   }
 
@@ -293,6 +328,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   btnRow.className = 'button-row';
 
   const applyBtn = document.createElement('button');
+  applyBtn.type = 'button';
   applyBtn.textContent = chrome.i18n.getMessage('apply');
   applyBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -303,6 +339,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   });
   
   const resetBtn = document.createElement('button');
+  resetBtn.type = 'button';
   resetBtn.textContent = chrome.i18n.getMessage('reset');
   resetBtn.className = 'secondary';
   resetBtn.addEventListener('click', async () => {
@@ -320,22 +357,33 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   app.appendChild(container);
 }
 
-function createLabel(text: string): HTMLElement {
+function createLabel(text: string, htmlFor?: string): HTMLLabelElement {
   const label = document.createElement('label');
   label.textContent = text;
+  if (htmlFor) label.htmlFor = htmlFor;
   return label;
+}
+
+function createSectionTitle(text: string): HTMLHeadingElement {
+  const title = document.createElement('h2');
+  title.id = createControlId('section-title');
+  title.className = 'section-title';
+  title.textContent = text;
+  return title;
 }
 
 function createSliderSetting(label: string, min: number, max: number, step: number, value: number, onChange: (val: number) => void): HTMLElement {
   const wrapper = document.createElement('div');
-  wrapper.appendChild(createLabel(label));
   const row = document.createElement('div');
   row.className = 'slider-row';
 
   const slider = document.createElement('input');
+  slider.id = createControlId('slider');
   slider.type = 'range';
   slider.min = min.toString(); slider.max = max.toString(); slider.step = step.toString();
   slider.value = value.toString();
+  slider.setAttribute('aria-valuetext', value.toFixed(2));
+  wrapper.appendChild(createLabel(label, slider.id));
 
   const valDisp = document.createElement('span');
   valDisp.textContent = value.toFixed(2);
@@ -344,6 +392,7 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
   slider.addEventListener('input', () => {
     const val = parseFloat(slider.value);
     valDisp.textContent = val.toFixed(2);
+    slider.setAttribute('aria-valuetext', val.toFixed(2));
     onChange(val);
   });
 

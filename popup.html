@@ -16,6 +16,7 @@
     --info-text: #1d4f8f;
     --success-bg: #eaf7ef;
     --success-text: #23603d;
+    --focus: #6d28d9;
   }
 
   * { box-sizing: border-box; }
@@ -56,7 +57,8 @@
   .banner,
   .section,
   .status-message,
-  .empty-state {
+  .empty-state,
+  .section-title {
     border-radius: 10px;
   }
 
@@ -92,15 +94,38 @@
   .button-row button { flex: 1; }
   .preset-list { flex-wrap: wrap; margin: 6px 0 8px; }
   .preset-list .empty-state { width: 100%; }
-  .auto-apply-row { align-items: flex-start; color: var(--muted); font-size: 12px; }
-  .auto-apply-row input { margin-top: 2px; }
+  .auto-apply-row {
+    align-items: center;
+    min-height: 44px;
+    color: var(--muted);
+    font-size: 12px;
+  }
 
-  label {
+  .auto-apply-row input {
+    width: 24px;
+    height: 24px;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  label,
+  .section-title {
     display: block;
     margin-bottom: 5px;
     color: var(--muted);
     font-size: 12px;
     font-weight: 700;
+  }
+
+  .section-title {
+    margin-top: 0;
+  }
+
+  .checkbox-label {
+    min-height: 44px;
+    margin-bottom: 0;
+    display: inline-flex;
+    align-items: center;
   }
 
   select,
@@ -111,8 +136,8 @@
 
   select {
     width: 100%;
-    min-height: 36px;
-    padding: 6px 9px;
+    min-height: 44px;
+    padding: 8px 10px;
     border: 1px solid var(--border);
     border-radius: 8px;
     background: #fff;
@@ -120,8 +145,8 @@
   }
 
   button {
-    min-height: 34px;
-    padding: 7px 10px;
+    min-height: 44px;
+    padding: 9px 12px;
     border: 1px solid var(--primary);
     border-radius: 9px;
     background: var(--primary);
@@ -136,8 +161,8 @@
   }
 
   button.compact {
-    min-height: 28px;
-    padding: 4px 8px;
+    min-height: 44px;
+    padding: 8px 10px;
     font-size: 12px;
   }
 
@@ -151,13 +176,26 @@
   select:focus-visible,
   button:focus-visible,
   input:focus-visible {
-    outline: 3px solid rgb(47 93 80 / 28%);
+    outline: 3px solid var(--focus);
     outline-offset: 2px;
   }
 
   input[type="range"] {
     flex: 1;
+    min-height: 44px;
     accent-color: var(--primary);
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
   }
 
   .value-pill {
