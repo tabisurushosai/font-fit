@@ -11,6 +11,9 @@ const defaultSettings: Settings = {
   maxWidth: '760px'
 };
 
+const STATUS_TIMEOUT_MS = 1800;
+let statusTimer: number | undefined;
+
 type Preset = {
   name: string;
   settings: Settings;
@@ -30,6 +33,21 @@ async function loadSettings(): Promise<Settings> {
 
 async function saveSettings(settings: Settings) {
   await chrome.storage.local.set({ settings });
+}
+
+function showStatus(statusEl: HTMLElement, message: string) {
+  if (statusTimer) window.clearTimeout(statusTimer);
+  statusEl.textContent = message;
+  statusEl.hidden = false;
+  statusTimer = window.setTimeout(() => {
+    statusEl.hidden = true;
+  }, STATUS_TIMEOUT_MS);
+}
+
+function saveSettingsWithStatus(settings: Settings, statusEl: HTMLElement) {
+  void saveSettings(settings).then(() => {
+    showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
+  });
 }
 
 async function getPremiumStatus(): Promise<PremiumStatus> {
@@ -82,12 +100,14 @@ async function loadAutoApplySites(): Promise<string[]> {
   return data.autoApplySites || [];
 }
 
-async function createUI(settings: Settings) {
+async function createUI(settings: Settings, initialStatusMessage = '') {
   const app = document.getElementById('app');
   const appTitle = document.getElementById('app-title');
   if (!app) return;
   if (appTitle) appTitle.textContent = chrome.i18n.getMessage('appName');
   app.innerHTML = '';
+  app.className = '';
+  app.setAttribute('aria-busy', 'false');
 
   const premiumStatus = await getPremiumStatus();
   const presets = await loadPresets();
@@ -95,31 +115,29 @@ async function createUI(settings: Settings) {
   const autoApplySites = await loadAutoApplySites();
 
   const container = document.createElement('div');
-  container.style.display = 'flex';
-  container.style.flexDirection = 'column';
-  container.style.gap = '10px';
-  container.style.padding = '10px';
-  container.style.width = '300px';
+  container.className = 'popup-panel';
 
   // Premium Banner
   const premiumBanner = document.createElement('div');
-  premiumBanner.style.padding = '8px';
-  premiumBanner.style.borderRadius = '4px';
-  premiumBanner.style.fontSize = '11px';
+  premiumBanner.className = 'banner';
   if (premiumStatus.trialExpired) {
-    premiumBanner.style.backgroundColor = '#ffebee';
-    premiumBanner.style.color = '#c62828';
-    premiumBanner.innerHTML = `${chrome.i18n.getMessage('trialExpired')}<br><a href="https://checkout.stripe.com/pay/font-fit-premium" target="_blank" style="color:#c62828; font-weight:bold;">${chrome.i18n.getMessage('upgradePremium')}</a>`;
+    premiumBanner.classList.add('banner--danger');
+    premiumBanner.innerHTML = `${chrome.i18n.getMessage('trialExpired')}<br><a href="https://checkout.stripe.com/pay/font-fit-premium" target="_blank">${chrome.i18n.getMessage('upgradePremium')}</a>`;
   } else if (premiumStatus.isTrialing) {
-    premiumBanner.style.backgroundColor = '#e3f2fd';
-    premiumBanner.style.color = '#1565c0';
+    premiumBanner.classList.add('banner--info');
     premiumBanner.textContent = chrome.i18n.getMessage('premiumTrial', [premiumStatus.daysLeft.toString()]);
   } else {
-    premiumBanner.style.backgroundColor = '#e8f5e9';
-    premiumBanner.style.color = '#2e7d32';
+    premiumBanner.classList.add('banner--success');
     premiumBanner.textContent = chrome.i18n.getMessage('premiumActive');
   }
   container.appendChild(premiumBanner);
+
+  const statusEl = document.createElement('p');
+  statusEl.className = 'status-message';
+  statusEl.setAttribute('role', 'status');
+  statusEl.hidden = true;
+  container.appendChild(statusEl);
+  if (initialStatusMessage) showStatus(statusEl, initialStatusMessage);
 
   // Font Family
   const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'));
@@ -137,7 +155,7 @@ async function createUI(settings: Settings) {
   });
   fontSelect.addEventListener('change', () => {
     settings.fontFamily = fontSelect.value;
-    saveSettings(settings);
+    saveSettingsWithStatus(settings, statusEl);
   });
   container.appendChild(fontLabel);
   container.appendChild(fontSelect);
@@ -145,27 +163,24 @@ async function createUI(settings: Settings) {
   // Sliders
   container.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, (val) => {
     settings.fontSize = val;
-    saveSettings(settings);
+    saveSettingsWithStatus(settings, statusEl);
   }));
   container.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, (val) => {
     settings.lineHeight = val;
-    saveSettings(settings);
+    saveSettingsWithStatus(settings, statusEl);
   }));
   container.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, (val) => {
     settings.letterSpacing = val;
-    saveSettings(settings);
+    saveSettingsWithStatus(settings, statusEl);
   }));
 
   // Background Color & Max Width
   const row2 = document.createElement('div');
-  row2.style.display = 'flex';
-  row2.style.gap = '8px';
+  row2.className = 'form-row';
 
   const bgCol = document.createElement('div');
-  bgCol.style.flex = '1';
   bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor')));
   const bgSelect = document.createElement('select');
-  bgSelect.style.width = '100%';
   [
     { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
     { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
@@ -176,15 +191,16 @@ async function createUI(settings: Settings) {
     if (opt.value === settings.backgroundColor) el.selected = true;
     bgSelect.appendChild(el);
   });
-  bgSelect.addEventListener('change', () => { settings.backgroundColor = bgSelect.value; saveSettings(settings); });
+  bgSelect.addEventListener('change', () => {
+    settings.backgroundColor = bgSelect.value;
+    saveSettingsWithStatus(settings, statusEl);
+  });
   bgCol.appendChild(bgSelect);
   row2.appendChild(bgCol);
 
   const widthCol = document.createElement('div');
-  widthCol.style.flex = '1';
   widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth')));
   const widthSelect = document.createElement('select');
-  widthSelect.style.width = '100%';
   [
     { name: '640px', value: '640px' },
     { name: '760px', value: '760px' },
@@ -195,32 +211,37 @@ async function createUI(settings: Settings) {
     if (opt.value === settings.maxWidth) el.selected = true;
     widthSelect.appendChild(el);
   });
-  widthSelect.addEventListener('change', () => { settings.maxWidth = widthSelect.value; saveSettings(settings); });
+  widthSelect.addEventListener('change', () => {
+    settings.maxWidth = widthSelect.value;
+    saveSettingsWithStatus(settings, statusEl);
+  });
   widthCol.appendChild(widthSelect);
   row2.appendChild(widthCol);
   container.appendChild(row2);
 
   // Presets Section
   const presetContainer = document.createElement('div');
-  presetContainer.style.borderTop = '1px solid #eee';
-  presetContainer.style.paddingTop = '8px';
+  presetContainer.className = 'section';
   presetContainer.appendChild(createLabel(chrome.i18n.getMessage('presets')));
   
   const presetList = document.createElement('div');
-  presetList.style.display = 'flex';
-  presetList.style.gap = '4px';
-  presetList.style.flexWrap = 'wrap';
-  presetList.style.margin = '4px 0';
+  presetList.className = 'preset-list';
 
-  presets.forEach((p, i) => {
+  if (presets.length === 0) {
+    const emptyState = document.createElement('p');
+    emptyState.className = 'empty-state';
+    emptyState.textContent = chrome.i18n.getMessage('noPresets');
+    presetList.appendChild(emptyState);
+  }
+
+  presets.forEach((p) => {
     const pBtn = document.createElement('button');
     pBtn.textContent = p.name;
-    pBtn.style.fontSize = '10px';
-    pBtn.style.padding = '2px 6px';
-    pBtn.addEventListener('click', () => {
+    pBtn.className = 'secondary compact';
+    pBtn.addEventListener('click', async () => {
       Object.assign(settings, p.settings);
-      saveSettings(settings);
-      createUI(settings);
+      await saveSettings(settings);
+      await createUI(settings, chrome.i18n.getMessage('savedStatus'));
     });
     presetList.appendChild(pBtn);
   });
@@ -228,7 +249,7 @@ async function createUI(settings: Settings) {
 
   const savePresetBtn = document.createElement('button');
   savePresetBtn.textContent = chrome.i18n.getMessage('save');
-  savePresetBtn.style.fontSize = '10px';
+  savePresetBtn.className = 'compact';
   if (!premiumStatus.isPremium && presets.length >= 2) {
     savePresetBtn.disabled = true;
     savePresetBtn.title = chrome.i18n.getMessage('premiumForMorePresets');
@@ -238,7 +259,7 @@ async function createUI(settings: Settings) {
     if (name) {
       presets.push({ name, settings: { ...settings } });
       await savePresets(presets);
-      createUI(settings);
+      await createUI(settings, chrome.i18n.getMessage('savedStatus'));
     }
   });
   presetContainer.appendChild(savePresetBtn);
@@ -247,7 +268,7 @@ async function createUI(settings: Settings) {
   // Auto Apply
   if (domain) {
     const aaRow = document.createElement('div');
-    aaRow.style.fontSize = '11px';
+    aaRow.className = 'auto-apply-row';
     const aaCheck = document.createElement('input');
     aaCheck.type = 'checkbox';
     aaCheck.checked = autoApplySites.includes(domain);
@@ -260,6 +281,7 @@ async function createUI(settings: Settings) {
       if (aaCheck.checked) { if (!sites.includes(domain)) sites.push(domain); }
       else { sites = sites.filter(s => s !== domain); }
       await chrome.storage.local.set({ autoApplySites: sites });
+      showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
     });
     aaRow.appendChild(aaCheck);
     aaRow.appendChild(document.createTextNode(chrome.i18n.getMessage('autoApply')));
@@ -268,26 +290,26 @@ async function createUI(settings: Settings) {
 
   // Action Buttons
   const btnRow = document.createElement('div');
-  btnRow.style.display = 'flex';
-  btnRow.style.gap = '8px';
+  btnRow.className = 'button-row';
 
   const applyBtn = document.createElement('button');
   applyBtn.textContent = chrome.i18n.getMessage('apply');
-  applyBtn.style.flex = '1';
   applyBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: applyStyle, args: [settings] });
+      showStatus(statusEl, chrome.i18n.getMessage('appliedStatus'));
     }
   });
   
   const resetBtn = document.createElement('button');
   resetBtn.textContent = chrome.i18n.getMessage('reset');
-  resetBtn.style.flex = '1';
+  resetBtn.className = 'secondary';
   resetBtn.addEventListener('click', async () => {
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     if (tab?.id) {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: removeStyle });
+      showStatus(statusEl, chrome.i18n.getMessage('resetStatus'));
     }
   });
 
@@ -301,9 +323,6 @@ async function createUI(settings: Settings) {
 function createLabel(text: string): HTMLElement {
   const label = document.createElement('label');
   label.textContent = text;
-  label.style.fontSize = '11px';
-  label.style.fontWeight = 'bold';
-  label.style.display = 'block';
   return label;
 }
 
@@ -311,20 +330,16 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
   const wrapper = document.createElement('div');
   wrapper.appendChild(createLabel(label));
   const row = document.createElement('div');
-  row.style.display = 'flex';
-  row.style.alignItems = 'center';
-  row.style.gap = '8px';
+  row.className = 'slider-row';
 
   const slider = document.createElement('input');
   slider.type = 'range';
   slider.min = min.toString(); slider.max = max.toString(); slider.step = step.toString();
   slider.value = value.toString();
-  slider.style.flex = '1';
 
   const valDisp = document.createElement('span');
   valDisp.textContent = value.toFixed(2);
-  valDisp.style.fontSize = '10px';
-  valDisp.style.minWidth = '25px';
+  valDisp.className = 'value-pill';
 
   slider.addEventListener('input', () => {
     const val = parseFloat(slider.value);
@@ -339,12 +354,20 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
+  const app = document.getElementById('app');
+  const appTitle = document.getElementById('app-title');
+  if (appTitle) appTitle.textContent = chrome.i18n.getMessage('appName');
+  if (app) {
+    app.textContent = chrome.i18n.getMessage('loading');
+    app.setAttribute('aria-busy', 'true');
+  }
+
   const settings = await loadSettings();
   const premiumStatus = await getPremiumStatus();
   const domain = await getCurrentDomain();
   const autoApplySites = await loadAutoApplySites();
 
-  createUI(settings);
+  await createUI(settings);
 
   // Auto-apply logic
   if (premiumStatus.isPremium && domain && autoApplySites.includes(domain)) {
