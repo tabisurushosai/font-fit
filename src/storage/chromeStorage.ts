@@ -7,7 +7,7 @@ export function createChromeStorageAdapter(area: ChromeStorageArea = chrome.stor
   return {
     async loadSettings(): Promise<Settings> {
       const data = await area.get('settings');
-      return mergeSettings(data.settings);
+      return mergeSettings(data['settings']);
     },
 
     async saveSettings(settings: Settings): Promise<void> {
@@ -17,8 +17,8 @@ export function createChromeStorageAdapter(area: ChromeStorageArea = chrome.stor
     async loadPremiumState(): Promise<PremiumState> {
       const data = await area.get(['is_premium', 'trial_start_ts']);
       return {
-        isPremium: !!data.is_premium,
-        trialStartTs: data.trial_start_ts
+        isPremium: !!data['is_premium'],
+        trialStartTs: data['trial_start_ts']
       };
     },
 
@@ -28,7 +28,7 @@ export function createChromeStorageAdapter(area: ChromeStorageArea = chrome.stor
 
     async loadPresets(): Promise<Preset[]> {
       const data = await area.get('presets');
-      return data.presets || [];
+      return data['presets'] || [];
     },
 
     async savePresets(presets: Preset[]): Promise<void> {
@@ -37,7 +37,7 @@ export function createChromeStorageAdapter(area: ChromeStorageArea = chrome.stor
 
     async loadAutoApplySites(): Promise<string[]> {
       const data = await area.get('autoApplySites');
-      return data.autoApplySites || [];
+      return data['autoApplySites'] || [];
     },
 
     async saveAutoApplySites(sites: string[]): Promise<void> {

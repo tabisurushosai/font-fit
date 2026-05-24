@@ -6,27 +6,27 @@ export { FONT_STACKS, type Settings } from './core/settings';
 
 import type { Settings as FontFitSettings } from './core/settings';
 
+const STYLE_ID = 'font-fit-style';
+const ACTIVE_CLASS = 'font-fit-active';
+const MAIN_CONTENT_SELECTORS = [
+  'article',
+  'main',
+  '[role="main"]',
+  '.main',
+  '#main',
+  '.content',
+  '#content',
+  '.post-content',
+  '.article-body'
+] as const;
+
 /**
  * 本文要素を検出してスタイルを注入する
  */
-export function applyStyle(settings: FontFitSettings) {
-  const STYLE_ID = 'font-fit-style';
-  const ACTIVE_CLASS = 'font-fit-active';
-
+export function applyStyle(settings: FontFitSettings): void {
   // 本文と思われる要素を探す
   const findMainElement = (): HTMLElement => {
-    const selectors = [
-      'article', 
-      'main', 
-      '[role="main"]', 
-      '.main', 
-      '#main', 
-      '.content', 
-      '#content',
-      '.post-content',
-      '.article-body'
-    ];
-    for (const selector of selectors) {
+    for (const selector of MAIN_CONTENT_SELECTORS) {
       const el = document.querySelector(selector);
       if (el instanceof HTMLElement) return el;
     }
@@ -87,10 +87,7 @@ export function applyStyle(settings: FontFitSettings) {
 /**
  * スタイルを解除する
  */
-export function removeStyle() {
-  const STYLE_ID = 'font-fit-style';
-  const ACTIVE_CLASS = 'font-fit-active';
-
+export function removeStyle(): void {
   const style = document.getElementById(STYLE_ID);
   if (style) style.remove();
   
