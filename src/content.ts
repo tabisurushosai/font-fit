@@ -2,6 +2,7 @@
  * content.ts : ページ本文に可読性スタイルを適用/解除する。
  */
 
+import { getAccessibleThemeColors } from './core/accessibility';
 import { BACKGROUND_COLORS, type Settings } from './core/settings';
 
 const STYLE_ID = 'font-fit-style';
@@ -41,9 +42,8 @@ export function applyStyle(settings: Settings): void {
   const style = document.createElement('style');
   style.id = STYLE_ID;
 
-  // 文字色を背景色に合わせて簡易的に調整
-  const isDark = settings.backgroundColor === BACKGROUND_COLORS.DARK;
-  const textColor = isDark ? '#eeeeee' : '#333333';
+  // 背景を上書きしたときも、本文・リンク・フォーカス表示のコントラストを保つ。
+  const themeColors = getAccessibleThemeColors(settings.backgroundColor);
 
   style.textContent = `
     .${ACTIVE_CLASS} {
@@ -52,7 +52,7 @@ export function applyStyle(settings: Settings): void {
       line-height: ${settings.lineHeight} !important;
       letter-spacing: ${settings.letterSpacing}em !important;
       background-color: ${settings.backgroundColor} !important;
-      color: ${textColor} !important;
+      color: ${themeColors.text} !important;
       max-width: ${settings.maxWidth} !important;
       margin-left: auto !important;
       margin-right: auto !important;
@@ -68,6 +68,22 @@ export function applyStyle(settings: Settings): void {
       font-family: inherit !important;
       line-height: inherit !important;
       color: inherit !important;
+    }
+    .${ACTIVE_CLASS} a {
+      color: ${themeColors.link} !important;
+      text-decoration-line: underline !important;
+      text-decoration-thickness: 0.1em !important;
+      text-underline-offset: 0.16em !important;
+    }
+    .${ACTIVE_CLASS} a:focus-visible,
+    .${ACTIVE_CLASS} button:focus-visible,
+    .${ACTIVE_CLASS} input:focus-visible,
+    .${ACTIVE_CLASS} select:focus-visible,
+    .${ACTIVE_CLASS} textarea:focus-visible,
+    .${ACTIVE_CLASS} [tabindex]:not([tabindex="-1"]):focus-visible {
+      outline: 3px solid ${themeColors.focusRing} !important;
+      outline-offset: 3px !important;
+      box-shadow: 0 0 0 6px color-mix(in srgb, ${themeColors.focusRing} 24%, transparent) !important;
     }
   `;
   document.head.appendChild(style);
