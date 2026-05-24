@@ -248,11 +248,24 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   
   const presetList = document.createElement('div');
   presetList.className = 'preset-list';
+  let emptyPresetStateId: string | undefined;
 
   if (presets.length === 0) {
-    const emptyState = document.createElement('p');
+    emptyPresetStateId = createControlId('empty-presets');
+    const emptyState = document.createElement('div');
+    emptyState.id = emptyPresetStateId;
     emptyState.className = 'empty-state';
-    emptyState.textContent = chrome.i18n.getMessage('noPresets');
+    emptyState.setAttribute('role', 'note');
+
+    const emptyStateTitle = document.createElement('strong');
+    emptyStateTitle.className = 'empty-state__title';
+    emptyStateTitle.textContent = chrome.i18n.getMessage('noPresetsTitle');
+
+    const emptyStateBody = document.createElement('span');
+    emptyStateBody.className = 'empty-state__body';
+    emptyStateBody.textContent = chrome.i18n.getMessage('noPresetsDescription');
+
+    emptyState.append(emptyStateTitle, emptyStateBody);
     presetList.appendChild(emptyState);
   }
 
@@ -274,6 +287,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   savePresetBtn.type = 'button';
   savePresetBtn.textContent = chrome.i18n.getMessage('save');
   savePresetBtn.className = 'compact';
+  if (emptyPresetStateId) savePresetBtn.setAttribute('aria-describedby', emptyPresetStateId);
   if (!premiumStatus.isPremium && presets.length >= FREE_PRESET_LIMIT) {
     const morePresetsMessage = chrome.i18n.getMessage('premiumForMorePresets', [formatInteger(FREE_PRESET_LIMIT + 1, uiLocale)]);
     savePresetBtn.disabled = true;
