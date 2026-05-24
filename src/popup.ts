@@ -133,6 +133,13 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   container.appendChild(statusEl);
   if (initialStatusMessage) showStatus(statusEl, initialStatusMessage);
 
+  if (presets.length === 0) {
+    const onboardingTip = document.createElement('p');
+    onboardingTip.className = 'onboarding-tip';
+    onboardingTip.textContent = chrome.i18n.getMessage('onboardingTip');
+    container.appendChild(onboardingTip);
+  }
+
   // Font Family
   const fontSelect = document.createElement('select');
   fontSelect.id = createControlId('font-family');
