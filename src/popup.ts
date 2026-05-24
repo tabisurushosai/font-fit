@@ -2,7 +2,7 @@
 
 import { applyStyle, removeStyle } from './content';
 import { formatFixedDecimal, formatInteger, fractionDigitsForStep } from './core/format';
-import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Preset, type Settings } from './core/settings';
+import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Settings } from './core/settings';
 import { createChromeStorageAdapter } from './storage/chromeStorage';
 
 const STATUS_TIMEOUT_MS = 1800;
@@ -11,15 +11,12 @@ let statusTimer: number | undefined;
 let controlIdSequence = 0;
 const storage = createChromeStorageAdapter();
 
-async function loadSettings(): Promise<Settings> {
-  return storage.loadSettings();
-}
+type SelectOption = Readonly<{
+  name: string;
+  value: string;
+}>;
 
-async function saveSettings(settings: Settings) {
-  await storage.saveSettings(settings);
-}
-
-function showStatus(statusEl: HTMLElement, message: string) {
+function showStatus(statusEl: HTMLElement, message: string): void {
   if (statusTimer) window.clearTimeout(statusTimer);
   statusEl.textContent = message;
   statusEl.hidden = false;
@@ -28,8 +25,8 @@ function showStatus(statusEl: HTMLElement, message: string) {
   }, STATUS_TIMEOUT_MS);
 }
 
-function saveSettingsWithStatus(settings: Settings, statusEl: HTMLElement) {
-  void saveSettings(settings).then(() => {
+function saveSettingsWithStatus(settings: Settings, statusEl: HTMLElement): void {
+  void storage.saveSettings(settings).then(() => {
     showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
   });
 }
@@ -43,7 +40,7 @@ function getUiLocale(): string {
   return chrome.i18n.getUILanguage?.() || navigator.language || 'ja';
 }
 
-function localizeAppTitle() {
+function localizeAppTitle(): void {
   const appName = chrome.i18n.getMessage('appName');
   document.title = appName;
 
@@ -64,16 +61,13 @@ async function getPremiumStatus(): Promise<PremiumStatus> {
   return resolvePremiumStatus({ ...premiumState, trialStartTs: trialStart }, now);
 }
 
-async function loadPresets(): Promise<Preset[]> {
-  return storage.loadPresets();
-}
-
-async function savePresets(presets: Preset[]) {
-  await storage.savePresets(presets);
+async function getActiveTab(): Promise<chrome.tabs.Tab | undefined> {
+  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  return tab;
 }
 
 async function getCurrentDomain(): Promise<string> {
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const tab = await getActiveTab();
   if (tab?.url) {
     try {
       return new URL(tab.url).hostname;
@@ -84,11 +78,7 @@ async function getCurrentDomain(): Promise<string> {
   return '';
 }
 
-async function loadAutoApplySites(): Promise<string[]> {
-  return storage.loadAutoApplySites();
-}
-
-async function createUI(settings: Settings, initialStatusMessage = '') {
+async function createUI(settings: Settings, initialStatusMessage = ''): Promise<void> {
   const app = document.getElementById('app');
   if (!app) return;
   localizeAppTitle();
@@ -98,9 +88,9 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   app.setAttribute('aria-busy', 'false');
 
   const premiumStatus = await getPremiumStatus();
-  const presets = await loadPresets();
+  const presets = await storage.loadPresets();
   const domain = await getCurrentDomain();
-  const autoApplySites = await loadAutoApplySites();
+  const autoApplySites = await storage.loadAutoApplySites();
   const uiLocale = getUiLocale();
 
   const container = document.createElement('div');
@@ -154,17 +144,11 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   const fontSelect = document.createElement('select');
   fontSelect.id = createControlId('font-family');
   const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'), fontSelect.id);
-  [
+  appendSelectOptions(fontSelect, [
     { name: chrome.i18n.getMessage('fontUD'), value: FONT_STACKS.UD_GOTHIC },
     { name: chrome.i18n.getMessage('fontSans'), value: FONT_STACKS.SANS_SERIF },
     { name: chrome.i18n.getMessage('fontSerif'), value: FONT_STACKS.SERIF }
-  ].forEach(opt => {
-    const el = document.createElement('option');
-    el.value = opt.value;
-    el.textContent = opt.name;
-    if (opt.value === settings.fontFamily) el.selected = true;
-    fontSelect.appendChild(el);
-  });
+  ], settings.fontFamily);
   fontSelect.addEventListener('change', () => {
     settings.fontFamily = fontSelect.value;
     saveSettingsWithStatus(settings, statusEl);
@@ -198,16 +182,11 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   const bgSelect = document.createElement('select');
   bgSelect.id = createControlId('background-color');
   bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor'), bgSelect.id));
-  [
+  appendSelectOptions(bgSelect, [
     { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
     { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
     { name: chrome.i18n.getMessage('bgDark'), value: '#333333' }
-  ].forEach(opt => {
-    const el = document.createElement('option');
-    el.value = opt.value; el.textContent = opt.name;
-    if (opt.value === settings.backgroundColor) el.selected = true;
-    bgSelect.appendChild(el);
-  });
+  ], settings.backgroundColor);
   bgSelect.addEventListener('change', () => {
     settings.backgroundColor = bgSelect.value;
     saveSettingsWithStatus(settings, statusEl);
@@ -220,16 +199,11 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   const widthSelect = document.createElement('select');
   widthSelect.id = createControlId('max-width');
   widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth'), widthSelect.id));
-  [
+  appendSelectOptions(widthSelect, [
     { name: chrome.i18n.getMessage('pixelValue', [formatInteger(640, uiLocale)]), value: '640px' },
     { name: chrome.i18n.getMessage('pixelValue', [formatInteger(760, uiLocale)]), value: '760px' },
     { name: chrome.i18n.getMessage('widthFull'), value: 'none' }
-  ].forEach(opt => {
-    const el = document.createElement('option');
-    el.value = opt.value; el.textContent = opt.name;
-    if (opt.value === settings.maxWidth) el.selected = true;
-    widthSelect.appendChild(el);
-  });
+  ], settings.maxWidth);
   widthSelect.addEventListener('change', () => {
     settings.maxWidth = widthSelect.value;
     saveSettingsWithStatus(settings, statusEl);
@@ -245,7 +219,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   presetContainer.setAttribute('role', 'group');
   presetContainer.setAttribute('aria-labelledby', presetTitle.id);
   presetContainer.appendChild(presetTitle);
-  
+
   const presetList = document.createElement('div');
   presetList.className = 'preset-list';
   let emptyPresetStateId: string | undefined;
@@ -276,7 +250,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
     pBtn.className = 'secondary compact';
     pBtn.addEventListener('click', async () => {
       Object.assign(settings, p.settings);
-      await saveSettings(settings);
+      await storage.saveSettings(settings);
       await createUI(settings, chrome.i18n.getMessage('savedStatus'));
     });
     presetList.appendChild(pBtn);
@@ -299,7 +273,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
     const name = prompt(chrome.i18n.getMessage('presetNamePrompt'), chrome.i18n.getMessage('defaultPresetName', [presetNumber]));
     if (name) {
       presets.push({ name, settings: { ...settings } });
-      await savePresets(presets);
+      await storage.savePresets(presets);
       await createUI(settings, chrome.i18n.getMessage('savedStatus'));
     }
   });
@@ -327,9 +301,12 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
       aaRow.appendChild(premiumOnlyNote);
     }
     aaCheck.addEventListener('change', async () => {
-      let sites = await loadAutoApplySites();
-      if (aaCheck.checked) { if (!sites.includes(domain)) sites.push(domain); }
-      else { sites = sites.filter(s => s !== domain); }
+      let sites = await storage.loadAutoApplySites();
+      if (aaCheck.checked) {
+        if (!sites.includes(domain)) sites.push(domain);
+      } else {
+        sites = sites.filter((site) => site !== domain);
+      }
       await storage.saveAutoApplySites(sites);
       showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
     });
@@ -348,19 +325,19 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   applyBtn.type = 'button';
   applyBtn.textContent = chrome.i18n.getMessage('apply');
   applyBtn.addEventListener('click', async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await getActiveTab();
     if (tab?.id) {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: applyStyle, args: [settings] });
       showStatus(statusEl, chrome.i18n.getMessage('appliedStatus'));
     }
   });
-  
+
   const resetBtn = document.createElement('button');
   resetBtn.type = 'button';
   resetBtn.textContent = chrome.i18n.getMessage('reset');
   resetBtn.className = 'secondary';
   resetBtn.addEventListener('click', async () => {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await getActiveTab();
     if (tab?.id) {
       await chrome.scripting.executeScript({ target: { tabId: tab.id }, func: removeStyle });
       showStatus(statusEl, chrome.i18n.getMessage('resetStatus'));
@@ -381,6 +358,16 @@ function createLabel(text: string, htmlFor?: string): HTMLLabelElement {
   return label;
 }
 
+function appendSelectOptions(select: HTMLSelectElement, options: readonly SelectOption[], selectedValue: string): void {
+  for (const option of options) {
+    const el = document.createElement('option');
+    el.value = option.value;
+    el.textContent = option.name;
+    if (option.value === selectedValue) el.selected = true;
+    select.appendChild(el);
+  }
+}
+
 function createSectionTitle(text: string): HTMLHeadingElement {
   const title = document.createElement('h2');
   title.id = createControlId('section-title');
@@ -394,12 +381,14 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
   wrapper.className = 'setting-group';
   const row = document.createElement('div');
   row.className = 'slider-row';
-  const formatSliderValue = (sliderValue: number) => formatFixedDecimal(sliderValue, locale, fractionDigitsForStep(step));
+  const formatSliderValue = (sliderValue: number): string => formatFixedDecimal(sliderValue, locale, fractionDigitsForStep(step));
 
   const slider = document.createElement('input');
   slider.id = createControlId('slider');
   slider.type = 'range';
-  slider.min = min.toString(); slider.max = max.toString(); slider.step = step.toString();
+  slider.min = min.toString();
+  slider.max = max.toString();
+  slider.step = step.toString();
   slider.value = value.toString();
   slider.setAttribute('aria-valuetext', formatSliderValue(value));
   wrapper.appendChild(createLabel(label, slider.id));
@@ -430,18 +419,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     app.setAttribute('aria-busy', 'true');
   }
 
-  const settings = await loadSettings();
+  const settings = await storage.loadSettings();
   const premiumStatus = await getPremiumStatus();
   const domain = await getCurrentDomain();
-  const autoApplySites = await loadAutoApplySites();
+  const autoApplySites = await storage.loadAutoApplySites();
 
   await createUI(settings);
 
   // Auto-apply logic
   if (premiumStatus.isPremium && domain && autoApplySites.includes(domain)) {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const tab = await getActiveTab();
     if (tab?.id) {
-      chrome.scripting.executeScript({ target: { tabId: tab.id }, func: applyStyle, args: [settings] });
+      void chrome.scripting.executeScript({ target: { tabId: tab.id }, func: applyStyle, args: [settings] });
     }
   }
 });

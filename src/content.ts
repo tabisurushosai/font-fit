@@ -2,9 +2,10 @@
  * content.ts : ページ本文に可読性スタイルを適用/解除する。
  */
 
-export { FONT_STACKS, type Settings } from './core/settings';
+import type { Settings } from './core/settings';
 
-import type { Settings as FontFitSettings } from './core/settings';
+export { FONT_STACKS } from './core/settings';
+export type { Settings } from './core/settings';
 
 const STYLE_ID = 'font-fit-style';
 const ACTIVE_CLASS = 'font-fit-active';
@@ -20,19 +21,19 @@ const MAIN_CONTENT_SELECTORS = [
   '.article-body'
 ] as const;
 
+function findMainElement(): HTMLElement {
+  for (const selector of MAIN_CONTENT_SELECTORS) {
+    const el = document.querySelector(selector);
+    if (el instanceof HTMLElement) return el;
+  }
+
+  return document.body;
+}
+
 /**
  * 本文要素を検出してスタイルを注入する
  */
-export function applyStyle(settings: FontFitSettings): void {
-  // 本文と思われる要素を探す
-  const findMainElement = (): HTMLElement => {
-    for (const selector of MAIN_CONTENT_SELECTORS) {
-      const el = document.querySelector(selector);
-      if (el instanceof HTMLElement) return el;
-    }
-    return document.body;
-  };
-
+export function applyStyle(settings: Settings): void {
   // 既存のスタイルとクラスをクリア
   const existingStyle = document.getElementById(STYLE_ID);
   if (existingStyle) existingStyle.remove();
@@ -42,7 +43,7 @@ export function applyStyle(settings: FontFitSettings): void {
   // 新しいスタイルを作成
   const style = document.createElement('style');
   style.id = STYLE_ID;
-  
+
   // 文字色を背景色に合わせて簡易的に調整
   const isDark = settings.backgroundColor === '#333333';
   const textColor = isDark ? '#eeeeee' : '#333333';
@@ -77,7 +78,7 @@ export function applyStyle(settings: FontFitSettings): void {
   // クラスを適用
   const mainEl = findMainElement();
   mainEl.classList.add(ACTIVE_CLASS);
-  
+
   // 全体の背景色も調整（隙間が目立たないように）
   if (settings.backgroundColor !== '#ffffff' && settings.backgroundColor !== 'transparent') {
     document.body.style.backgroundColor = settings.backgroundColor;
@@ -90,9 +91,9 @@ export function applyStyle(settings: FontFitSettings): void {
 export function removeStyle(): void {
   const style = document.getElementById(STYLE_ID);
   if (style) style.remove();
-  
+
   const elements = document.querySelectorAll(`.${ACTIVE_CLASS}`);
   elements.forEach(el => el.classList.remove(ACTIVE_CLASS));
-  
+
   document.body.style.backgroundColor = '';
 }
