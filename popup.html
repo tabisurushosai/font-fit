@@ -2,12 +2,13 @@
 <style>
   :root {
     color-scheme: light;
-    --bg: #f7f4ee;
+    --bg: #f6f0e7;
     --surface: #fffdfa;
-    --surface-muted: #f3efe7;
-    --border: #cfc6b8;
+    --surface-soft: #fbf7f0;
+    --surface-muted: #f0eadf;
+    --border: #c8bdac;
     --text: #1f2933;
-    --muted: #4b5563;
+    --muted: #374151;
     --primary: #285548;
     --primary-strong: #1f4238;
     --danger-bg: #fde9e9;
@@ -22,7 +23,7 @@
   * { box-sizing: border-box; }
 
   body {
-    width: 344px;
+    width: 360px;
     margin: 0;
     background: var(--bg);
     color: var(--text);
@@ -32,13 +33,13 @@
   }
 
   .popup-shell {
-    padding: 16px;
+    padding: 18px;
   }
 
   #app-title {
-    margin: 0 0 12px;
+    margin: 0 0 14px;
     color: var(--text);
-    font-size: 19px;
+    font-size: 20px;
     font-weight: 700;
     letter-spacing: 0.01em;
   }
@@ -46,12 +47,12 @@
   .popup-panel {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 14px;
+    gap: 16px;
+    padding: 16px;
     border: 1px solid var(--border);
-    border-radius: 16px;
+    border-radius: 18px;
     background: var(--surface);
-    box-shadow: 0 10px 24px rgb(31 41 51 / 9%);
+    box-shadow: 0 12px 28px rgb(31 41 51 / 10%);
   }
 
   .banner,
@@ -64,7 +65,7 @@
   }
 
   .banner {
-    padding: 10px 11px;
+    padding: 11px 12px;
     border: 1px solid transparent;
     font-size: 12.5px;
     font-weight: 600;
@@ -86,9 +87,12 @@
   }
 
   .section {
-    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 13px;
     border: 1px solid var(--border);
-    background: #fcfaf6;
+    background: var(--surface-soft);
   }
 
   .form-row,
@@ -106,17 +110,22 @@
     display: flex;
     flex-direction: column;
     gap: 6px;
+    padding: 10px;
+    border: 1px solid #ddd4c6;
+    border-radius: 12px;
+    background: var(--surface);
   }
   .slider-row {
     align-items: center;
     gap: 10px;
   }
   .button-row button { flex: 1; }
-  .preset-list { flex-wrap: wrap; margin: 8px 0 10px; }
+  .preset-list { flex-wrap: wrap; margin: 0; }
   .preset-list .empty-state { width: 100%; }
   .auto-apply-row {
     align-items: center;
     min-height: 44px;
+    padding: 0 2px;
     color: var(--muted);
     font-size: 12px;
   }
@@ -139,7 +148,7 @@
   }
 
   .section-title {
-    margin-top: 0;
+    margin: 0;
     color: var(--text);
     font-size: 13px;
   }
@@ -236,8 +245,8 @@
   }
 
   .value-pill {
-    min-width: 48px;
-    padding: 4px 8px;
+    min-width: 52px;
+    padding: 5px 8px;
     border-radius: 999px;
     background: var(--surface-muted);
     color: var(--text);
@@ -248,7 +257,7 @@
 
   .status-message {
     margin: 0;
-    padding: 8px 10px;
+    padding: 9px 11px;
     border: 1px solid #bde4ca;
     background: var(--success-bg);
     color: var(--success-text);
@@ -258,7 +267,7 @@
 
   .onboarding-tip {
     margin: 0;
-    padding: 10px 11px;
+    padding: 11px 12px;
     border: 1px solid #bfdcff;
     background: var(--info-bg);
     color: var(--info-text);
@@ -269,7 +278,7 @@
   .empty-state,
   .app-loading {
     margin: 0;
-    padding: 12px;
+    padding: 13px;
     border: 1px dashed var(--border);
     background: var(--surface-muted);
     color: var(--muted);
@@ -292,6 +301,7 @@
     border-style: solid;
     border-radius: 12px;
     font-weight: 700;
+    text-align: center;
   }
 </style></head>
 <body>

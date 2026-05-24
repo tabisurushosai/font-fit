@@ -140,7 +140,13 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     container.appendChild(onboardingTip);
   }
 
-  // Font Family
+  // Readability Settings
+  const settingsSection = document.createElement('section');
+  settingsSection.className = 'section';
+  const settingsTitle = createSectionTitle(chrome.i18n.getMessage('readingSettings'));
+  settingsSection.setAttribute('aria-labelledby', settingsTitle.id);
+  settingsSection.appendChild(settingsTitle);
+
   const fontSelect = document.createElement('select');
   fontSelect.id = createControlId('font-family');
   const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'), fontSelect.id);
@@ -157,18 +163,18 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   fontField.className = 'setting-group';
   fontField.appendChild(fontLabel);
   fontField.appendChild(fontSelect);
-  container.appendChild(fontField);
+  settingsSection.appendChild(fontField);
 
   // Sliders
-  container.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, (val) => {
+  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, (val) => {
     settings.fontSize = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
-  container.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, uiLocale, (val) => {
+  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, uiLocale, (val) => {
     settings.lineHeight = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
-  container.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, uiLocale, (val) => {
+  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, uiLocale, (val) => {
     settings.letterSpacing = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
@@ -210,7 +216,8 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   });
   widthCol.appendChild(widthSelect);
   row2.appendChild(widthCol);
-  container.appendChild(row2);
+  settingsSection.appendChild(row2);
+  container.appendChild(settingsSection);
 
   // Presets Section
   const presetContainer = document.createElement('div');

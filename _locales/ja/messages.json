@@ -23,6 +23,7 @@
   "bgDark": { "message": "ダークグレー" },
   "maxWidth": { "message": "本文の最大幅" },
   "widthFull": { "message": "幅制限なし" },
+  "readingSettings": { "message": "読みやすさの設定" },
   "presets": { "message": "プリセット" },
   "noPresetsTitle": { "message": "保存済みプリセットはまだありません" },
   "noPresetsDescription": { "message": "使いやすい設定ができたら、「保存」で次回すぐ呼び出せます。" },
