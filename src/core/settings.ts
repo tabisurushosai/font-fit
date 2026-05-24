@@ -4,13 +4,30 @@ export const FONT_STACKS = {
   SERIF: 'serif'
 } as const;
 
+export const BACKGROUND_COLORS = {
+  WHITE: '#ffffff',
+  CREAM: '#fdf5e6',
+  DARK: '#333333',
+  TRANSPARENT: 'transparent'
+} as const;
+
+export const MAX_WIDTHS = {
+  NARROW: '640px',
+  DEFAULT: '760px',
+  FULL: 'none'
+} as const;
+
+export type FontFamily = typeof FONT_STACKS[keyof typeof FONT_STACKS];
+export type BackgroundColor = typeof BACKGROUND_COLORS[keyof typeof BACKGROUND_COLORS];
+export type MaxWidth = typeof MAX_WIDTHS[keyof typeof MAX_WIDTHS];
+
 export interface Settings {
-  fontFamily: string;
+  fontFamily: FontFamily;
   fontSize: number;
   lineHeight: number;
   letterSpacing: number;
-  backgroundColor: string;
-  maxWidth: string;
+  backgroundColor: BackgroundColor;
+  maxWidth: MaxWidth;
 }
 
 export type Preset = {
@@ -36,8 +53,8 @@ export const defaultSettings: Settings = {
   fontSize: 1.2,
   lineHeight: 1.8,
   letterSpacing: 0.05,
-  backgroundColor: '#ffffff',
-  maxWidth: '760px'
+  backgroundColor: BACKGROUND_COLORS.WHITE,
+  maxWidth: MAX_WIDTHS.DEFAULT
 };
 
 export const TRIAL_DURATION_MS = 7 * 24 * 60 * 60 * 1000;

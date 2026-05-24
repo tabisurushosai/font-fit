@@ -2,7 +2,7 @@
  * content.ts : ページ本文に可読性スタイルを適用/解除する。
  */
 
-import type { Settings } from './core/settings';
+import { BACKGROUND_COLORS, type Settings } from './core/settings';
 
 const STYLE_ID = 'font-fit-style';
 const ACTIVE_CLASS = 'font-fit-active';
@@ -42,7 +42,7 @@ export function applyStyle(settings: Settings): void {
   style.id = STYLE_ID;
 
   // 文字色を背景色に合わせて簡易的に調整
-  const isDark = settings.backgroundColor === '#333333';
+  const isDark = settings.backgroundColor === BACKGROUND_COLORS.DARK;
   const textColor = isDark ? '#eeeeee' : '#333333';
 
   style.textContent = `
@@ -77,7 +77,7 @@ export function applyStyle(settings: Settings): void {
   mainEl.classList.add(ACTIVE_CLASS);
 
   // 全体の背景色も調整（隙間が目立たないように）
-  if (settings.backgroundColor !== '#ffffff' && settings.backgroundColor !== 'transparent') {
+  if (settings.backgroundColor !== BACKGROUND_COLORS.WHITE && settings.backgroundColor !== BACKGROUND_COLORS.TRANSPARENT) {
     document.body.style.backgroundColor = settings.backgroundColor;
   }
 }
