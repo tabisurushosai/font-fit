@@ -2,7 +2,13 @@
 
 import { applyStyle, removeStyle } from './content';
 import { formatCurrency, formatFixedDecimal, formatInteger, formatShortDate, fractionDigitsForStep } from './core/format';
-import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Settings } from './core/settings';
+import {
+  FONT_STACKS,
+  getPremiumStatus as resolvePremiumStatus,
+  shouldShowInitialOnboardingGuide,
+  type PremiumStatus,
+  type Settings
+} from './core/settings';
 import { createChromeStorageAdapter } from './storage/chromeStorage';
 
 const STATUS_TIMEOUT_MS = 1800;
@@ -148,7 +154,7 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   container.appendChild(statusEl);
   if (initialStatusMessage) showStatus(statusEl, initialStatusMessage);
 
-  if (presets.length === 0) {
+  if (shouldShowInitialOnboardingGuide(settings, presets, autoApplySites)) {
     const onboardingTip = document.createElement('p');
     onboardingTip.className = 'onboarding-tip';
     onboardingTip.setAttribute('role', 'note');

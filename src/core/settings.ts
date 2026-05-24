@@ -46,6 +46,23 @@ export function mergeSettings(settings?: Partial<Settings>): Settings {
   return { ...defaultSettings, ...settings };
 }
 
+export function shouldShowInitialOnboardingGuide(
+  settings: Settings,
+  presets: readonly Preset[],
+  autoApplySites: readonly string[]
+): boolean {
+  return (
+    presets.length === 0 &&
+    autoApplySites.length === 0 &&
+    settings.fontFamily === defaultSettings.fontFamily &&
+    settings.fontSize === defaultSettings.fontSize &&
+    settings.lineHeight === defaultSettings.lineHeight &&
+    settings.letterSpacing === defaultSettings.letterSpacing &&
+    settings.backgroundColor === defaultSettings.backgroundColor &&
+    settings.maxWidth === defaultSettings.maxWidth
+  );
+}
+
 export function getPremiumStatus(state: PremiumState, now = Date.now()): PremiumStatus {
   const trialStartTs = state.trialStartTs ?? now;
   const trialExpiresAt = trialStartTs + TRIAL_DURATION_MS;
