@@ -4,11 +4,13 @@
     color-scheme: light;
     --bg: #f6f0e7;
     --surface: #fffdfa;
+    --surface-strong: #ffffff;
     --surface-soft: #fbf7f0;
     --surface-muted: #f0eadf;
     --border: #c8bdac;
+    --border-soft: #ded4c5;
     --text: #1f2933;
-    --muted: #374151;
+    --muted: #334155;
     --primary: #285548;
     --primary-strong: #1f4238;
     --danger-bg: #fde9e9;
@@ -18,12 +20,13 @@
     --success-bg: #e8f6ee;
     --success-text: #1f5b3a;
     --focus: #5b21b6;
+    --shadow: 0 12px 28px rgb(31 41 51 / 10%);
   }
 
   * { box-sizing: border-box; }
 
   body {
-    width: 360px;
+    width: 372px;
     margin: 0;
     background: var(--bg);
     color: var(--text);
@@ -33,14 +36,15 @@
   }
 
   .popup-shell {
-    padding: 18px;
+    padding: 18px 16px 16px;
   }
 
   #app-title {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     color: var(--text);
     font-size: 20px;
     font-weight: 700;
+    line-height: 1.2;
     letter-spacing: 0.01em;
   }
 
@@ -52,7 +56,7 @@
     border: 1px solid var(--border);
     border-radius: 18px;
     background: var(--surface);
-    box-shadow: 0 12px 28px rgb(31 41 51 / 10%);
+    box-shadow: var(--shadow);
   }
 
   .banner,
@@ -67,7 +71,7 @@
   .banner {
     padding: 11px 12px;
     border: 1px solid transparent;
-    font-size: 12.5px;
+    font-size: 13px;
     font-weight: 600;
     line-height: 1.5;
   }
@@ -89,9 +93,9 @@
   .section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 13px;
-    border: 1px solid var(--border);
+    gap: 12px;
+    padding: 14px;
+    border: 1px solid var(--border-soft);
     background: var(--surface-soft);
   }
 
@@ -105,15 +109,22 @@
     gap: 8px;
   }
 
-  .form-row > div { flex: 1; }
+  .form-row > div {
+    min-width: 0;
+    flex: 1;
+  }
   .setting-group {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 10px;
-    border: 1px solid #ddd4c6;
+    gap: 8px;
+    padding: 11px;
+    border: 1px solid var(--border-soft);
     border-radius: 12px;
-    background: var(--surface);
+    background: var(--surface-strong);
+  }
+  .setting-group:focus-within {
+    border-color: #9f8e78;
+    box-shadow: 0 0 0 3px rgb(159 142 120 / 18%);
   }
   .slider-row {
     align-items: center;
@@ -142,7 +153,7 @@
     display: block;
     margin-bottom: 0;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 12.5px;
     font-weight: 700;
     letter-spacing: 0.01em;
   }
@@ -150,7 +161,8 @@
   .section-title {
     margin: 0;
     color: var(--text);
-    font-size: 13px;
+    font-size: 13.5px;
+    line-height: 1.35;
   }
 
   .checkbox-label {
@@ -175,7 +187,7 @@
     padding: 8px 11px;
     border: 1px solid var(--border);
     border-radius: 10px;
-    background: #fff;
+    background: var(--surface-strong);
     color: var(--text);
   }
 
@@ -208,7 +220,7 @@
   button.compact {
     min-height: 44px;
     padding: 8px 10px;
-    font-size: 12px;
+    font-size: 12.5px;
   }
 
   button:disabled,
@@ -231,6 +243,7 @@
     flex: 1;
     min-height: 44px;
     accent-color: var(--primary);
+    cursor: pointer;
   }
 
   .visually-hidden {
@@ -246,66 +259,79 @@
   }
 
   .value-pill {
-    min-width: 52px;
-    padding: 5px 8px;
+    min-width: 56px;
+    padding: 5px 9px;
+    border: 1px solid var(--border-soft);
     border-radius: 999px;
-    background: var(--surface-muted);
+    background: var(--surface-strong);
     color: var(--text);
-    font-size: 12px;
+    font-size: 12.5px;
+    font-weight: 700;
     text-align: right;
     font-variant-numeric: tabular-nums;
   }
 
   .status-message {
     margin: 0;
-    padding: 9px 11px;
+    padding: 10px 12px;
     border: 1px solid #bde4ca;
+    border-left-width: 4px;
     background: var(--success-bg);
     color: var(--success-text);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
+    line-height: 1.45;
   }
 
   .onboarding-tip {
     margin: 0;
-    padding: 11px 12px;
+    padding: 12px;
     border: 1px solid #bfdcff;
+    border-left-width: 4px;
     background: var(--info-bg);
     color: var(--info-text);
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 700;
+    line-height: 1.5;
   }
 
   .empty-state,
   .app-loading {
     margin: 0;
-    padding: 13px;
+    padding: 14px;
     border: 1px dashed var(--border);
     background: var(--surface-muted);
     color: var(--muted);
-    font-size: 12px;
+    font-size: 13px;
     line-height: 1.5;
   }
 
   .empty-state {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
   }
 
   .empty-state__title {
     color: var(--text);
-    font-size: 12.5px;
+    font-size: 13.5px;
   }
 
   .empty-state__action {
+    margin-top: 2px;
     color: var(--primary);
     font-weight: 700;
   }
 
   .app-loading {
+    min-height: 168px;
     border-style: solid;
-    border-radius: 12px;
+    border-radius: 16px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     font-weight: 700;
     text-align: center;
   }
