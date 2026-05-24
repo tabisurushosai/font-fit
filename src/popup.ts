@@ -1,12 +1,13 @@
 // popup.ts : 設定UI(フォント/行間/文字間/背景色/最大幅)。
 
 import { applyStyle, removeStyle } from './content';
-import { formatFixedDecimal, formatInteger, fractionDigitsForStep } from './core/format';
+import { formatCurrency, formatFixedDecimal, formatInteger, fractionDigitsForStep } from './core/format';
 import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Settings } from './core/settings';
 import { createChromeStorageAdapter } from './storage/chromeStorage';
 
 const STATUS_TIMEOUT_MS = 1800;
 const FREE_PRESET_LIMIT = 2;
+const PREMIUM_PRICE_USD = 3;
 let statusTimer: number | undefined;
 let controlIdSequence = 0;
 const storage = createChromeStorageAdapter();
@@ -102,12 +103,13 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   premiumBanner.setAttribute('role', premiumStatus.trialExpired ? 'alert' : 'note');
   if (premiumStatus.trialExpired) {
     premiumBanner.classList.add('banner--danger');
+    const upgradeLabel = chrome.i18n.getMessage('upgradePremium', [formatCurrency(PREMIUM_PRICE_USD, 'USD', uiLocale)]);
     const upgradeLink = document.createElement('a');
     upgradeLink.href = 'https://checkout.stripe.com/pay/font-fit-premium';
     upgradeLink.target = '_blank';
     upgradeLink.rel = 'noopener noreferrer';
-    upgradeLink.textContent = chrome.i18n.getMessage('upgradePremium');
-    upgradeLink.setAttribute('aria-label', chrome.i18n.getMessage('upgradePremiumNewTab', [chrome.i18n.getMessage('upgradePremium')]));
+    upgradeLink.textContent = upgradeLabel;
+    upgradeLink.setAttribute('aria-label', chrome.i18n.getMessage('upgradePremiumNewTab', [upgradeLabel]));
     premiumBanner.append(
       document.createTextNode(chrome.i18n.getMessage('trialExpired')),
       document.createElement('br'),
