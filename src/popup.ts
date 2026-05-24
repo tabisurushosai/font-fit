@@ -3,9 +3,14 @@
 import { applyStyle, removeStyle } from './content';
 import { formatCurrency, formatFixedDecimal, formatInteger, formatShortDate, fractionDigitsForStep } from './core/format';
 import {
+  BACKGROUND_COLORS,
   FONT_STACKS,
+  MAX_WIDTHS,
   getPremiumStatus as resolvePremiumStatus,
   shouldShowInitialOnboardingGuide,
+  type BackgroundColor,
+  type FontFamily,
+  type MaxWidth,
   type PremiumStatus,
   type Settings
 } from './core/settings';
@@ -18,17 +23,17 @@ let statusTimer: number | undefined;
 let controlIdSequence = 0;
 const storage = createChromeStorageAdapter();
 
-type SelectOption = Readonly<{
+type SelectOption<Value extends string = string> = Readonly<{
   name: string;
-  value: string;
+  value: Value;
 }>;
 
-type SelectSettingConfig = Readonly<{
+type SelectSettingConfig<Value extends string = string> = Readonly<{
   idPrefix: string;
   label: string;
-  options: readonly SelectOption[];
-  selectedValue: string;
-  onChange: (value: string) => void;
+  options: readonly SelectOption<Value>[];
+  selectedValue: Value;
+  onChange: (value: Value) => void;
 }>;
 
 function showStatus(statusEl: HTMLElement, message: string): void {
@@ -178,7 +183,7 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
       { name: chrome.i18n.getMessage('fontUD'), value: FONT_STACKS.UD_GOTHIC },
       { name: chrome.i18n.getMessage('fontSans'), value: FONT_STACKS.SANS_SERIF },
       { name: chrome.i18n.getMessage('fontSerif'), value: FONT_STACKS.SERIF }
-    ],
+    ] satisfies readonly SelectOption<FontFamily>[],
     selectedValue: settings.fontFamily,
     onChange: (value) => {
       settings.fontFamily = value;
@@ -208,10 +213,10 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     idPrefix: 'background-color',
     label: chrome.i18n.getMessage('bgColor'),
     options: [
-      { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
-      { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
-      { name: chrome.i18n.getMessage('bgDark'), value: '#333333' }
-    ],
+      { name: chrome.i18n.getMessage('bgWhite'), value: BACKGROUND_COLORS.WHITE },
+      { name: chrome.i18n.getMessage('bgCream'), value: BACKGROUND_COLORS.CREAM },
+      { name: chrome.i18n.getMessage('bgDark'), value: BACKGROUND_COLORS.DARK }
+    ] satisfies readonly SelectOption<BackgroundColor>[],
     selectedValue: settings.backgroundColor,
     onChange: (value) => {
       settings.backgroundColor = value;
@@ -224,10 +229,10 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     idPrefix: 'max-width',
     label: chrome.i18n.getMessage('maxWidth'),
     options: [
-      { name: chrome.i18n.getMessage('pixelValue', [formatInteger(640, uiLocale)]), value: '640px' },
-      { name: chrome.i18n.getMessage('pixelValue', [formatInteger(760, uiLocale)]), value: '760px' },
-      { name: chrome.i18n.getMessage('widthFull'), value: 'none' }
-    ],
+      { name: chrome.i18n.getMessage('pixelValue', [formatInteger(640, uiLocale)]), value: MAX_WIDTHS.NARROW },
+      { name: chrome.i18n.getMessage('pixelValue', [formatInteger(760, uiLocale)]), value: MAX_WIDTHS.DEFAULT },
+      { name: chrome.i18n.getMessage('widthFull'), value: MAX_WIDTHS.FULL }
+    ] satisfies readonly SelectOption<MaxWidth>[],
     selectedValue: settings.maxWidth,
     onChange: (value) => {
       settings.maxWidth = value;
@@ -413,7 +418,11 @@ function setDescribedBy(el: HTMLElement, ...ids: Array<string | undefined>): voi
   if (describedBy.length > 0) el.setAttribute('aria-describedby', describedBy.join(' '));
 }
 
-function appendSelectOptions(select: HTMLSelectElement, options: readonly SelectOption[], selectedValue: string): void {
+function appendSelectOptions<Value extends string>(
+  select: HTMLSelectElement,
+  options: readonly SelectOption<Value>[],
+  selectedValue: Value
+): void {
   for (const option of options) {
     const el = document.createElement('option');
     el.value = option.value;
@@ -423,7 +432,13 @@ function appendSelectOptions(select: HTMLSelectElement, options: readonly Select
   }
 }
 
-function createSelectSetting({ idPrefix, label, options, selectedValue, onChange }: SelectSettingConfig): HTMLDivElement {
+function createSelectSetting<Value extends string>({
+  idPrefix,
+  label,
+  options,
+  selectedValue,
+  onChange
+}: SelectSettingConfig<Value>): HTMLDivElement {
   const wrapper = document.createElement('div');
   wrapper.className = 'setting-group';
 
@@ -432,7 +447,8 @@ function createSelectSetting({ idPrefix, label, options, selectedValue, onChange
   wrapper.appendChild(createLabel(label, select.id));
   appendSelectOptions(select, options, selectedValue);
   select.addEventListener('change', () => {
-    onChange(select.value);
+    const selectedOption = options.find((option) => option.value === select.value);
+    if (selectedOption) onChange(selectedOption.value);
   });
   wrapper.appendChild(select);
 

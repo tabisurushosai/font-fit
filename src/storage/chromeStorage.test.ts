@@ -10,11 +10,11 @@ function createMemoryStoragePort(initialItems: FontFitStorageItems = {}): FontFi
 
   return {
     async get(keys: FontFitStorageKeyQuery): Promise<FontFitStorageItems> {
-      if (Array.isArray(keys)) {
-        return Object.fromEntries(keys.map((key) => [key, items[key]])) as FontFitStorageItems;
+      if (typeof keys === 'string') {
+        return { [keys]: items[keys] };
       }
 
-      return { [keys]: items[keys] };
+      return Object.fromEntries(keys.map((key) => [key, items[key]])) as FontFitStorageItems;
     },
 
     async set(nextItems: FontFitStorageItems): Promise<void> {

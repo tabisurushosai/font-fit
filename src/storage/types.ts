@@ -9,7 +9,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 export type FontFitStorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
-export type FontFitStorageKeyQuery = FontFitStorageKey | FontFitStorageKey[];
+export type FontFitStorageKeyQuery = FontFitStorageKey | readonly FontFitStorageKey[];
 
 export type FontFitStorageItems = Partial<{
   [STORAGE_KEYS.settings]: Partial<Settings>;
@@ -34,8 +34,3 @@ export interface FontFitStorage {
   loadAutoApplySites(): Promise<string[]>;
   saveAutoApplySites(sites: string[]): Promise<void>;
 }
-
-export type StorageKey = FontFitStorageKey;
-export type StorageKeyQuery = FontFitStorageKeyQuery;
-export type StorageItems = FontFitStorageItems;
-export type FontFitStorageArea = FontFitStoragePort;
