@@ -1,47 +1,48 @@
 import { mergeSettings, type PremiumState, type Preset, type Settings } from '../core/settings';
-import type { FontFitStorage } from './types';
+import { STORAGE_KEYS, type FontFitStorage, type FontFitStorageArea } from './types';
 
-type ChromeStorageArea = typeof chrome.storage.local;
-
-export function createChromeStorageAdapter(area: ChromeStorageArea = chrome.storage.local): FontFitStorage {
+export function createChromeStorageAdapter(area: FontFitStorageArea = chrome.storage.local): FontFitStorage {
   return {
     async loadSettings(): Promise<Settings> {
-      const data = await area.get('settings');
-      return mergeSettings(data['settings']);
+      const data = await area.get(STORAGE_KEYS.settings);
+      return mergeSettings(data[STORAGE_KEYS.settings]);
     },
 
     async saveSettings(settings: Settings): Promise<void> {
-      await area.set({ settings });
+      await area.set({ [STORAGE_KEYS.settings]: settings });
     },
 
     async loadPremiumState(): Promise<PremiumState> {
-      const data = await area.get(['is_premium', 'trial_start_ts']);
-      return {
-        isPremium: !!data['is_premium'],
-        trialStartTs: data['trial_start_ts']
-      };
+      const data = await area.get([STORAGE_KEYS.isPremium, STORAGE_KEYS.trialStartTs]);
+      const trialStartTs = data[STORAGE_KEYS.trialStartTs];
+
+      if (trialStartTs === undefined) {
+        return { isPremium: !!data[STORAGE_KEYS.isPremium] };
+      }
+
+      return { isPremium: !!data[STORAGE_KEYS.isPremium], trialStartTs };
     },
 
     async saveTrialStartTs(trialStartTs: number): Promise<void> {
-      await area.set({ trial_start_ts: trialStartTs });
+      await area.set({ [STORAGE_KEYS.trialStartTs]: trialStartTs });
     },
 
     async loadPresets(): Promise<Preset[]> {
-      const data = await area.get('presets');
-      return data['presets'] || [];
+      const data = await area.get(STORAGE_KEYS.presets);
+      return data[STORAGE_KEYS.presets] || [];
     },
 
     async savePresets(presets: Preset[]): Promise<void> {
-      await area.set({ presets });
+      await area.set({ [STORAGE_KEYS.presets]: presets });
     },
 
     async loadAutoApplySites(): Promise<string[]> {
-      const data = await area.get('autoApplySites');
-      return data['autoApplySites'] || [];
+      const data = await area.get(STORAGE_KEYS.autoApplySites);
+      return data[STORAGE_KEYS.autoApplySites] || [];
     },
 
     async saveAutoApplySites(sites: string[]): Promise<void> {
-      await area.set({ autoApplySites: sites });
+      await area.set({ [STORAGE_KEYS.autoApplySites]: sites });
     }
   };
 }

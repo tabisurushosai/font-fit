@@ -10,5 +10,17 @@ export default tseslint.config(
     rules: {
       '@typescript-eslint/consistent-type-imports': 'error'
     }
+  },
+  {
+    files: ['src/core/**/*.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'chrome',
+          message: 'Keep src/core portable; access chrome APIs through UI or storage adapters.'
+        }
+      ]
+    }
   }
 );
