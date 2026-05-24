@@ -248,7 +248,11 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     emptyStateBody.className = 'empty-state__body';
     emptyStateBody.textContent = chrome.i18n.getMessage('noPresetsDescription');
 
-    emptyState.append(emptyStateTitle, emptyStateBody);
+    const emptyStateAction = document.createElement('span');
+    emptyStateAction.className = 'empty-state__action';
+    emptyStateAction.textContent = chrome.i18n.getMessage('noPresetsAction');
+
+    emptyState.append(emptyStateTitle, emptyStateBody, emptyStateAction);
     presetList.appendChild(emptyState);
   }
 

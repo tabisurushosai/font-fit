@@ -27,6 +27,7 @@
   "presets": { "message": "プリセット" },
   "noPresetsTitle": { "message": "保存済みプリセットはまだありません" },
   "noPresetsDescription": { "message": "読みやすい設定ができたら、「保存」で次回からすぐ呼び出せます。" },
+  "noPresetsAction": { "message": "下の「保存」ボタンから、今の設定をプリセットにできます。" },
   "save": { "message": "保存" },
   "savedStatus": { "message": "保存しました。" },
   "appliedStatus": { "message": "このページに適用しました。" },
