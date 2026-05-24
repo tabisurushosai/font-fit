@@ -74,7 +74,16 @@
   .banner--danger { border-color: #f3c1c1; background: var(--danger-bg); color: var(--danger-text); }
   .banner--info { border-color: #bfdcff; background: var(--info-bg); color: var(--info-text); }
   .banner--success { border-color: #bde4ca; background: var(--success-bg); color: var(--success-text); }
-  .banner a { color: currentColor; font-weight: 700; }
+  .banner a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-top: 4px;
+    color: currentColor;
+    font-weight: 700;
+    text-decoration-thickness: 0.12em;
+    text-underline-offset: 0.18em;
+  }
 
   .section {
     padding: 12px;
@@ -136,10 +145,13 @@
   }
 
   .checkbox-label {
+    width: 100%;
     min-height: 44px;
     margin-bottom: 0;
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    gap: 10px;
+    cursor: pointer;
   }
 
   select,
@@ -198,6 +210,7 @@
   }
 
   select:focus-visible,
+  a:focus-visible,
   button:focus-visible,
   input:focus-visible {
     outline: 3px solid var(--focus);

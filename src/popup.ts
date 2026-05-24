@@ -87,6 +87,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   if (appTitle) appTitle.textContent = chrome.i18n.getMessage('appName');
   app.innerHTML = '';
   app.className = '';
+  app.removeAttribute('role');
   app.setAttribute('aria-busy', 'false');
 
   const premiumStatus = await getPremiumStatus();
@@ -109,6 +110,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
     upgradeLink.target = '_blank';
     upgradeLink.rel = 'noopener noreferrer';
     upgradeLink.textContent = chrome.i18n.getMessage('upgradePremium');
+    upgradeLink.setAttribute('aria-label', chrome.i18n.getMessage('upgradePremiumNewTab', [chrome.i18n.getMessage('upgradePremium')]));
     premiumBanner.append(
       document.createTextNode(chrome.i18n.getMessage('trialExpired')),
       document.createElement('br'),
@@ -136,6 +138,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   if (presets.length === 0) {
     const onboardingTip = document.createElement('p');
     onboardingTip.className = 'onboarding-tip';
+    onboardingTip.setAttribute('role', 'note');
     onboardingTip.textContent = chrome.i18n.getMessage('onboardingTip');
     container.appendChild(onboardingTip);
   }
@@ -232,6 +235,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   const presetContainer = document.createElement('div');
   presetContainer.className = 'section';
   const presetTitle = createSectionTitle(chrome.i18n.getMessage('presets'));
+  presetContainer.setAttribute('role', 'group');
   presetContainer.setAttribute('aria-labelledby', presetTitle.id);
   presetContainer.appendChild(presetTitle);
   
@@ -308,7 +312,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
       await storage.saveAutoApplySites(sites);
       showStatus(statusEl, chrome.i18n.getMessage('savedStatus'));
     });
-    aaRow.appendChild(aaCheck);
+    aaLabel.prepend(aaCheck);
     aaRow.appendChild(aaLabel);
     container.appendChild(aaRow);
   }
@@ -316,6 +320,8 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   // Action Buttons
   const btnRow = document.createElement('div');
   btnRow.className = 'button-row';
+  btnRow.setAttribute('role', 'group');
+  btnRow.setAttribute('aria-label', chrome.i18n.getMessage('pageActions'));
 
   const applyBtn = document.createElement('button');
   applyBtn.type = 'button';
