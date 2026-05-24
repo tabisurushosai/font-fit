@@ -23,6 +23,7 @@
   "bgDark": { "message": "Dark gray" },
   "maxWidth": { "message": "Maximum text width" },
   "widthFull": { "message": "No width limit" },
+  "readingSettings": { "message": "Readability settings" },
   "presets": { "message": "Presets" },
   "noPresetsTitle": { "message": "No saved presets yet" },
   "noPresetsDescription": { "message": "When a setup feels right, choose Save to keep it ready for next time." },
