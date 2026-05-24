@@ -17,6 +17,14 @@ type SelectOption = Readonly<{
   value: string;
 }>;
 
+type SelectSettingConfig = Readonly<{
+  idPrefix: string;
+  label: string;
+  options: readonly SelectOption[];
+  selectedValue: string;
+  onChange: (value: string) => void;
+}>;
+
 function showStatus(statusEl: HTMLElement, message: string): void {
   if (statusTimer) window.clearTimeout(statusTimer);
   statusEl.textContent = message;
@@ -149,23 +157,20 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   settingsSection.setAttribute('aria-labelledby', settingsTitle.id);
   settingsSection.appendChild(settingsTitle);
 
-  const fontSelect = document.createElement('select');
-  fontSelect.id = createControlId('font-family');
-  const fontLabel = createLabel(chrome.i18n.getMessage('fontFamily'), fontSelect.id);
-  appendSelectOptions(fontSelect, [
-    { name: chrome.i18n.getMessage('fontUD'), value: FONT_STACKS.UD_GOTHIC },
-    { name: chrome.i18n.getMessage('fontSans'), value: FONT_STACKS.SANS_SERIF },
-    { name: chrome.i18n.getMessage('fontSerif'), value: FONT_STACKS.SERIF }
-  ], settings.fontFamily);
-  fontSelect.addEventListener('change', () => {
-    settings.fontFamily = fontSelect.value;
-    saveSettingsWithStatus(settings, statusEl);
-  });
-  const fontField = document.createElement('div');
-  fontField.className = 'setting-group';
-  fontField.appendChild(fontLabel);
-  fontField.appendChild(fontSelect);
-  settingsSection.appendChild(fontField);
+  settingsSection.appendChild(createSelectSetting({
+    idPrefix: 'font-family',
+    label: chrome.i18n.getMessage('fontFamily'),
+    options: [
+      { name: chrome.i18n.getMessage('fontUD'), value: FONT_STACKS.UD_GOTHIC },
+      { name: chrome.i18n.getMessage('fontSans'), value: FONT_STACKS.SANS_SERIF },
+      { name: chrome.i18n.getMessage('fontSerif'), value: FONT_STACKS.SERIF }
+    ],
+    selectedValue: settings.fontFamily,
+    onChange: (value) => {
+      settings.fontFamily = value;
+      saveSettingsWithStatus(settings, statusEl);
+    }
+  }));
 
   // Sliders
   settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, (val) => {
@@ -185,38 +190,36 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   const row2 = document.createElement('div');
   row2.className = 'form-row';
 
-  const bgCol = document.createElement('div');
-  bgCol.className = 'setting-group';
-  const bgSelect = document.createElement('select');
-  bgSelect.id = createControlId('background-color');
-  bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor'), bgSelect.id));
-  appendSelectOptions(bgSelect, [
-    { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
-    { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
-    { name: chrome.i18n.getMessage('bgDark'), value: '#333333' }
-  ], settings.backgroundColor);
-  bgSelect.addEventListener('change', () => {
-    settings.backgroundColor = bgSelect.value;
-    saveSettingsWithStatus(settings, statusEl);
+  const bgCol = createSelectSetting({
+    idPrefix: 'background-color',
+    label: chrome.i18n.getMessage('bgColor'),
+    options: [
+      { name: chrome.i18n.getMessage('bgWhite'), value: '#ffffff' },
+      { name: chrome.i18n.getMessage('bgCream'), value: '#fdf5e6' },
+      { name: chrome.i18n.getMessage('bgDark'), value: '#333333' }
+    ],
+    selectedValue: settings.backgroundColor,
+    onChange: (value) => {
+      settings.backgroundColor = value;
+      saveSettingsWithStatus(settings, statusEl);
+    }
   });
-  bgCol.appendChild(bgSelect);
   row2.appendChild(bgCol);
 
-  const widthCol = document.createElement('div');
-  widthCol.className = 'setting-group';
-  const widthSelect = document.createElement('select');
-  widthSelect.id = createControlId('max-width');
-  widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth'), widthSelect.id));
-  appendSelectOptions(widthSelect, [
-    { name: chrome.i18n.getMessage('pixelValue', [formatInteger(640, uiLocale)]), value: '640px' },
-    { name: chrome.i18n.getMessage('pixelValue', [formatInteger(760, uiLocale)]), value: '760px' },
-    { name: chrome.i18n.getMessage('widthFull'), value: 'none' }
-  ], settings.maxWidth);
-  widthSelect.addEventListener('change', () => {
-    settings.maxWidth = widthSelect.value;
-    saveSettingsWithStatus(settings, statusEl);
+  const widthCol = createSelectSetting({
+    idPrefix: 'max-width',
+    label: chrome.i18n.getMessage('maxWidth'),
+    options: [
+      { name: chrome.i18n.getMessage('pixelValue', [formatInteger(640, uiLocale)]), value: '640px' },
+      { name: chrome.i18n.getMessage('pixelValue', [formatInteger(760, uiLocale)]), value: '760px' },
+      { name: chrome.i18n.getMessage('widthFull'), value: 'none' }
+    ],
+    selectedValue: settings.maxWidth,
+    onChange: (value) => {
+      settings.maxWidth = value;
+      saveSettingsWithStatus(settings, statusEl);
+    }
   });
-  widthCol.appendChild(widthSelect);
   row2.appendChild(widthCol);
   settingsSection.appendChild(row2);
   container.appendChild(settingsSection);
@@ -398,6 +401,22 @@ function appendSelectOptions(select: HTMLSelectElement, options: readonly Select
     if (option.value === selectedValue) el.selected = true;
     select.appendChild(el);
   }
+}
+
+function createSelectSetting({ idPrefix, label, options, selectedValue, onChange }: SelectSettingConfig): HTMLDivElement {
+  const wrapper = document.createElement('div');
+  wrapper.className = 'setting-group';
+
+  const select = document.createElement('select');
+  select.id = createControlId(idPrefix);
+  wrapper.appendChild(createLabel(label, select.id));
+  appendSelectOptions(select, options, selectedValue);
+  select.addEventListener('change', () => {
+    onChange(select.value);
+  });
+  wrapper.appendChild(select);
+
+  return wrapper;
 }
 
 function createSectionTitle(text: string): HTMLHeadingElement {

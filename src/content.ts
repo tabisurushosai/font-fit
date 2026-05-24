@@ -4,9 +4,6 @@
 
 import type { Settings } from './core/settings';
 
-export { FONT_STACKS } from './core/settings';
-export type { Settings } from './core/settings';
-
 const STYLE_ID = 'font-fit-style';
 const ACTIVE_CLASS = 'font-fit-active';
 const MAIN_CONTENT_SELECTORS = [
