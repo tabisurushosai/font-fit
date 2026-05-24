@@ -268,14 +268,23 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   savePresetBtn.type = 'button';
   savePresetBtn.textContent = chrome.i18n.getMessage('save');
   savePresetBtn.className = 'compact';
-  if (emptyPresetStateId) savePresetBtn.setAttribute('aria-describedby', emptyPresetStateId);
-  if (!premiumStatus.isPremium && presets.length >= FREE_PRESET_LIMIT) {
+  const isSavePresetLimitReached = !premiumStatus.isPremium && presets.length >= FREE_PRESET_LIMIT;
+  let presetLimitNoteId: string | undefined;
+  if (isSavePresetLimitReached) {
     const morePresetsMessage = chrome.i18n.getMessage('premiumForMorePresets', [formatInteger(FREE_PRESET_LIMIT + 1, uiLocale)]);
-    savePresetBtn.disabled = true;
+    const presetLimitNote = createVisuallyHiddenText(morePresetsMessage, 'preset-limit-note');
+    presetLimitNoteId = presetLimitNote.id;
+    presetContainer.appendChild(presetLimitNote);
+    savePresetBtn.setAttribute('aria-disabled', 'true');
     savePresetBtn.title = morePresetsMessage;
-    savePresetBtn.setAttribute('aria-label', `${chrome.i18n.getMessage('save')} - ${morePresetsMessage}`);
   }
-  savePresetBtn.addEventListener('click', async () => {
+  setDescribedBy(savePresetBtn, emptyPresetStateId, presetLimitNoteId);
+  savePresetBtn.addEventListener('click', async (event) => {
+    if (isSavePresetLimitReached) {
+      event.preventDefault();
+      return;
+    }
+
     const presetNumber = formatInteger(presets.length + 1, uiLocale);
     const name = prompt(chrome.i18n.getMessage('presetNamePrompt'), chrome.i18n.getMessage('defaultPresetName', [presetNumber]));
     if (name) {
@@ -300,11 +309,8 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     if (!premiumStatus.isPremium) {
       aaCheck.disabled = true;
       aaRow.title = chrome.i18n.getMessage('premiumOnly');
-      const premiumOnlyNote = document.createElement('span');
-      premiumOnlyNote.id = createControlId('premium-only-note');
-      premiumOnlyNote.className = 'visually-hidden';
-      premiumOnlyNote.textContent = chrome.i18n.getMessage('premiumOnly');
-      aaCheck.setAttribute('aria-describedby', premiumOnlyNote.id);
+      const premiumOnlyNote = createVisuallyHiddenText(chrome.i18n.getMessage('premiumOnly'), 'premium-only-note');
+      setDescribedBy(aaCheck, premiumOnlyNote.id);
       aaRow.appendChild(premiumOnlyNote);
     }
     aaCheck.addEventListener('change', async () => {
@@ -365,6 +371,19 @@ function createLabel(text: string, htmlFor?: string): HTMLLabelElement {
   return label;
 }
 
+function createVisuallyHiddenText(text: string, idPrefix: string): HTMLSpanElement {
+  const note = document.createElement('span');
+  note.id = createControlId(idPrefix);
+  note.className = 'visually-hidden';
+  note.textContent = text;
+  return note;
+}
+
+function setDescribedBy(el: HTMLElement, ...ids: Array<string | undefined>): void {
+  const describedBy = ids.filter((id): id is string => Boolean(id));
+  if (describedBy.length > 0) el.setAttribute('aria-describedby', describedBy.join(' '));
+}
+
 function appendSelectOptions(select: HTMLSelectElement, options: readonly SelectOption[], selectedValue: string): void {
   for (const option of options) {
     const el = document.createElement('option');
@@ -400,9 +419,12 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
   slider.setAttribute('aria-valuetext', formatSliderValue(value));
   wrapper.appendChild(createLabel(label, slider.id));
 
-  const valDisp = document.createElement('span');
+  const valDisp = document.createElement('output');
+  valDisp.id = createControlId('slider-value');
+  valDisp.htmlFor.add(slider.id);
   valDisp.textContent = formatSliderValue(value);
   valDisp.className = 'value-pill';
+  setDescribedBy(slider, valDisp.id);
 
   slider.addEventListener('input', () => {
     const val = parseFloat(slider.value);
