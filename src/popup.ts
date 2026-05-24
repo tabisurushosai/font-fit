@@ -43,6 +43,14 @@ function getUiLocale(): string {
   return chrome.i18n.getUILanguage?.() || navigator.language || 'ja';
 }
 
+function localizeAppTitle() {
+  const appName = chrome.i18n.getMessage('appName');
+  document.title = appName;
+
+  const appTitle = document.getElementById('app-title');
+  if (appTitle) appTitle.textContent = appName;
+}
+
 async function getPremiumStatus(): Promise<PremiumStatus> {
   const premiumState = await storage.loadPremiumState();
   const now = Date.now();
@@ -82,9 +90,8 @@ async function loadAutoApplySites(): Promise<string[]> {
 
 async function createUI(settings: Settings, initialStatusMessage = '') {
   const app = document.getElementById('app');
-  const appTitle = document.getElementById('app-title');
   if (!app) return;
-  if (appTitle) appTitle.textContent = chrome.i18n.getMessage('appName');
+  localizeAppTitle();
   app.innerHTML = '';
   app.className = '';
   app.removeAttribute('role');
@@ -403,8 +410,7 @@ function createSliderSetting(label: string, min: number, max: number, step: numb
 
 document.addEventListener('DOMContentLoaded', async () => {
   const app = document.getElementById('app');
-  const appTitle = document.getElementById('app-title');
-  if (appTitle) appTitle.textContent = chrome.i18n.getMessage('appName');
+  localizeAppTitle();
   if (app) {
     app.textContent = chrome.i18n.getMessage('loading');
     app.setAttribute('aria-busy', 'true');
