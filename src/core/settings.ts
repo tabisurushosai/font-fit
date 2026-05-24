@@ -2,7 +2,7 @@ export const FONT_STACKS = {
   UD_GOTHIC: '"BIZ UDPGothic", "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif',
   SANS_SERIF: 'sans-serif',
   SERIF: 'serif'
-};
+} as const;
 
 export interface Settings {
   fontFamily: string;
