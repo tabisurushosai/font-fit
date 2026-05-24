@@ -22,5 +22,17 @@ export default tseslint.config(
         }
       ]
     }
+  },
+  {
+    files: ['src/storage/adapter.ts', 'src/storage/index.ts', 'src/storage/types.ts'],
+    rules: {
+      'no-restricted-globals': [
+        'error',
+        {
+          name: 'chrome',
+          message: 'Keep portable storage code chrome-free; isolate chrome APIs in chromeStorage.ts.'
+        }
+      ]
+    }
   }
 );

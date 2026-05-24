@@ -9,6 +9,7 @@ export const STORAGE_KEYS = {
 } as const;
 
 export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
+export type StorageKeyQuery = StorageKey | StorageKey[];
 
 export type StorageItems = Partial<{
   [STORAGE_KEYS.settings]: Partial<Settings>;
@@ -19,7 +20,7 @@ export type StorageItems = Partial<{
 }>;
 
 export interface FontFitStorageArea {
-  get(keys: StorageKey | StorageKey[]): Promise<StorageItems>;
+  get(keys: StorageKeyQuery): Promise<StorageItems>;
   set(items: StorageItems): Promise<void>;
 }
 
