@@ -5,6 +5,7 @@
   "loading": { "message": "Loading..." },
   "trialExpired": { "message": "Your trial has ended. Some features are limited." },
   "upgradePremium": { "message": "Upgrade to Premium ($3)" },
+  "upgradePremiumNewTab": { "message": "$1 (opens in a new tab)", "placeholders": { "1": { "content": "$1" } } },
   "premiumTrialOne": { "message": "Premium trial: $1 day left", "placeholders": { "1": { "content": "$1" } } },
   "premiumTrialOther": { "message": "Premium trial: $1 days left", "placeholders": { "1": { "content": "$1" } } },
   "premiumActive": { "message": "Premium is active" },
@@ -34,6 +35,7 @@
   "autoApply": { "message": "Auto-apply on this site (Premium)" },
   "premiumOnly": { "message": "Premium-only feature" },
   "pixelValue": { "message": "$1 px", "placeholders": { "1": { "content": "$1" } } },
+  "pageActions": { "message": "Page actions" },
   "apply": { "message": "Apply" },
   "reset": { "message": "Reset" }
 }
