@@ -36,6 +36,14 @@ export function formatCurrency(value: number, currency: string, locale: string):
   }).format(value);
 }
 
+export function formatShortDate(value: Date | number, locale: string): string {
+  return new Intl.DateTimeFormat(resolveNumberLocale(locale), {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }).format(value);
+}
+
 export function fractionDigitsForStep(step: number): number {
   const stepText = step.toString();
   if (!stepText.includes('.')) return 0;

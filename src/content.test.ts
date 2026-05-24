@@ -21,6 +21,7 @@ describe('getPremiumStatus', () => {
       isPremium: true,
       isTrialing: true,
       daysLeft: 5,
+      trialEndsAt: trialStartTs + 7 * 24 * 60 * 60 * 1000,
       trialExpired: false
     });
   });

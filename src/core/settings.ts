@@ -22,6 +22,7 @@ export type PremiumStatus = {
   isPremium: boolean;
   isTrialing: boolean;
   daysLeft: number;
+  trialEndsAt: number;
   trialExpired: boolean;
 };
 
@@ -56,6 +57,7 @@ export function getPremiumStatus(state: PremiumState, now = Date.now()): Premium
     isPremium,
     isTrialing: isTrialing && !state.isPremium,
     daysLeft: isTrialing ? daysLeft : 0,
+    trialEndsAt: trialExpiresAt,
     trialExpired: !isTrialing && !state.isPremium
   };
 }

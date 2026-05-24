@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatCurrency, formatFixedDecimal, formatInteger, fractionDigitsForStep } from './format';
+import { formatCurrency, formatFixedDecimal, formatInteger, formatShortDate, fractionDigitsForStep } from './format';
 
 describe('formatInteger', () => {
   it('formats whole numbers with the supplied locale', () => {
@@ -27,6 +27,15 @@ describe('formatCurrency', () => {
   it('formats whole currency amounts with localized symbols', () => {
     expect(formatCurrency(3, 'USD', 'en-US')).toBe('$3');
     expect(formatCurrency(3, 'USD', 'ja-JP')).toBe('$3');
+  });
+});
+
+describe('formatShortDate', () => {
+  it('formats dates with the supplied locale', () => {
+    const value = Date.UTC(2026, 4, 31, 12);
+
+    expect(formatShortDate(value, 'en-US')).toBe('May 31, 2026');
+    expect(formatShortDate(value, 'ja-JP')).toBe('2026年5月31日');
   });
 });
 
