@@ -159,8 +159,11 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
     settings.fontFamily = fontSelect.value;
     saveSettingsWithStatus(settings, statusEl);
   });
-  container.appendChild(fontLabel);
-  container.appendChild(fontSelect);
+  const fontField = document.createElement('div');
+  fontField.className = 'setting-group';
+  fontField.appendChild(fontLabel);
+  fontField.appendChild(fontSelect);
+  container.appendChild(fontField);
 
   // Sliders
   container.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, (val) => {
@@ -181,6 +184,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   row2.className = 'form-row';
 
   const bgCol = document.createElement('div');
+  bgCol.className = 'setting-group';
   const bgSelect = document.createElement('select');
   bgSelect.id = createControlId('background-color');
   bgCol.appendChild(createLabel(chrome.i18n.getMessage('bgColor'), bgSelect.id));
@@ -202,6 +206,7 @@ async function createUI(settings: Settings, initialStatusMessage = '') {
   row2.appendChild(bgCol);
 
   const widthCol = document.createElement('div');
+  widthCol.className = 'setting-group';
   const widthSelect = document.createElement('select');
   widthSelect.id = createControlId('max-width');
   widthCol.appendChild(createLabel(chrome.i18n.getMessage('maxWidth'), widthSelect.id));
@@ -359,6 +364,7 @@ function createSectionTitle(text: string): HTMLHeadingElement {
 
 function createSliderSetting(label: string, min: number, max: number, step: number, value: number, locale: string, onChange: (val: number) => void): HTMLElement {
   const wrapper = document.createElement('div');
+  wrapper.className = 'setting-group';
   const row = document.createElement('div');
   row.className = 'slider-row';
   const formatSliderValue = (sliderValue: number) => formatFixedDecimal(sliderValue, locale, fractionDigitsForStep(step));
