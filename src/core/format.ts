@@ -24,6 +24,18 @@ export function formatFixedDecimal(value: number, locale: string, fractionDigits
   }).format(value);
 }
 
+export function formatCurrency(value: number, currency: string, locale: string): string {
+  const fractionDigits = Number.isInteger(value) ? 0 : 2;
+
+  return new Intl.NumberFormat(resolveNumberLocale(locale), {
+    style: 'currency',
+    currency,
+    currencyDisplay: 'narrowSymbol',
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits
+  }).format(value);
+}
+
 export function fractionDigitsForStep(step: number): number {
   const stepText = step.toString();
   if (!stepText.includes('.')) return 0;

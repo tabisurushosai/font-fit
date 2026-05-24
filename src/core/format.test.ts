@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatFixedDecimal, formatInteger, fractionDigitsForStep } from './format';
+import { formatCurrency, formatFixedDecimal, formatInteger, fractionDigitsForStep } from './format';
 
 describe('formatInteger', () => {
   it('formats whole numbers with the supplied locale', () => {
@@ -20,6 +20,13 @@ describe('formatFixedDecimal', () => {
 
   it('accepts normalized Japanese locale identifiers', () => {
     expect(formatFixedDecimal(1234.5, 'ja_JP', 1)).toBe('1,234.5');
+  });
+});
+
+describe('formatCurrency', () => {
+  it('formats whole currency amounts with localized symbols', () => {
+    expect(formatCurrency(3, 'USD', 'en-US')).toBe('$3');
+    expect(formatCurrency(3, 'USD', 'ja-JP')).toBe('$3');
   });
 });
 
