@@ -123,8 +123,8 @@
     background: var(--surface-strong);
   }
   .setting-group:focus-within {
-    border-color: #9f8e78;
-    box-shadow: 0 0 0 3px rgb(159 142 120 / 18%);
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px rgb(91 33 182 / 18%);
   }
   .slider-row {
     align-items: center;
@@ -236,7 +236,8 @@
   button:focus-visible,
   input:focus-visible {
     outline: 3px solid var(--focus);
-    outline-offset: 2px;
+    outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgb(91 33 182 / 16%);
   }
 
   input[type="range"] {
@@ -337,8 +338,9 @@
   }
 </style></head>
 <body>
-<main class="popup-shell" aria-labelledby="app-title">
+<main class="popup-shell" aria-labelledby="app-title" aria-describedby="app-description">
 <h1 id="app-title"></h1>
+<p id="app-description" class="visually-hidden"></p>
 <div id="app" class="app-loading" role="status"></div>
 </main>
 <script type="module" src="/src/popup.ts"></script>

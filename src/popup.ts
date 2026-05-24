@@ -55,6 +55,9 @@ function localizeAppTitle(): void {
 
   const appTitle = document.getElementById('app-title');
   if (appTitle) appTitle.textContent = appName;
+
+  const appDescription = document.getElementById('app-description');
+  if (appDescription) appDescription.textContent = chrome.i18n.getMessage('extDesc');
 }
 
 async function getPremiumStatus(): Promise<PremiumStatus> {
@@ -154,8 +157,10 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   const settingsSection = document.createElement('section');
   settingsSection.className = 'section';
   const settingsTitle = createSectionTitle(chrome.i18n.getMessage('readingSettings'));
+  const settingsHelp = createVisuallyHiddenText(chrome.i18n.getMessage('readingSettingsHelp'), 'reading-settings-help');
   settingsSection.setAttribute('aria-labelledby', settingsTitle.id);
-  settingsSection.appendChild(settingsTitle);
+  settingsSection.setAttribute('aria-describedby', settingsHelp.id);
+  settingsSection.append(settingsTitle, settingsHelp);
 
   settingsSection.appendChild(createSelectSetting({
     idPrefix: 'font-family',
@@ -228,12 +233,16 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   const presetContainer = document.createElement('div');
   presetContainer.className = 'section';
   const presetTitle = createSectionTitle(chrome.i18n.getMessage('presets'));
+  const presetHelp = createVisuallyHiddenText(chrome.i18n.getMessage('presetsHelp'), 'presets-help');
   presetContainer.setAttribute('role', 'group');
   presetContainer.setAttribute('aria-labelledby', presetTitle.id);
-  presetContainer.appendChild(presetTitle);
+  presetContainer.setAttribute('aria-describedby', presetHelp.id);
+  presetContainer.append(presetTitle, presetHelp);
 
   const presetList = document.createElement('div');
   presetList.className = 'preset-list';
+  presetList.setAttribute('role', 'group');
+  presetList.setAttribute('aria-label', chrome.i18n.getMessage('presetList'));
   let emptyPresetStateId: string | undefined;
 
   if (presets.length === 0) {
@@ -264,6 +273,7 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     pBtn.type = 'button';
     pBtn.textContent = p.name;
     pBtn.className = 'secondary compact';
+    pBtn.setAttribute('aria-label', chrome.i18n.getMessage('loadPresetAriaLabel', [p.name]));
     pBtn.addEventListener('click', async () => {
       Object.assign(settings, p.settings);
       await storage.saveSettings(settings);
@@ -277,6 +287,7 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   savePresetBtn.type = 'button';
   savePresetBtn.textContent = chrome.i18n.getMessage('save');
   savePresetBtn.className = 'compact';
+  savePresetBtn.setAttribute('aria-label', chrome.i18n.getMessage('savePresetAriaLabel'));
   const isSavePresetLimitReached = !premiumStatus.isPremium && presets.length >= FREE_PRESET_LIMIT;
   let presetLimitNoteId: string | undefined;
   if (isSavePresetLimitReached) {
