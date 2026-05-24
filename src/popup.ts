@@ -192,15 +192,15 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   }));
 
   // Sliders
-  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, (val) => {
+  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('fontSize'), 0.8, 3.0, 0.1, settings.fontSize, uiLocale, 'fontSizeValue', (val) => {
     settings.fontSize = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
-  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, uiLocale, (val) => {
+  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('lineHeight'), 1.0, 3.0, 0.1, settings.lineHeight, uiLocale, 'lineHeightValue', (val) => {
     settings.lineHeight = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
-  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, uiLocale, (val) => {
+  settingsSection.appendChild(createSliderSetting(chrome.i18n.getMessage('letterSpacing'), 0, 0.5, 0.01, settings.letterSpacing, uiLocale, 'letterSpacingValue', (val) => {
     settings.letterSpacing = val;
     saveSettingsWithStatus(settings, statusEl);
   }));
@@ -471,12 +471,23 @@ function createSectionDescription(text: string, idPrefix: string): HTMLParagraph
   return description;
 }
 
-function createSliderSetting(label: string, min: number, max: number, step: number, value: number, locale: string, onChange: (val: number) => void): HTMLElement {
+function createSliderSetting(
+  label: string,
+  min: number,
+  max: number,
+  step: number,
+  value: number,
+  locale: string,
+  valueMessageKey: string,
+  onChange: (val: number) => void
+): HTMLElement {
   const wrapper = document.createElement('div');
   wrapper.className = 'setting-group';
   const row = document.createElement('div');
   row.className = 'slider-row';
-  const formatSliderValue = (sliderValue: number): string => formatFixedDecimal(sliderValue, locale, fractionDigitsForStep(step));
+  const formatSliderValue = (sliderValue: number): string => chrome.i18n.getMessage(valueMessageKey, [
+    formatFixedDecimal(sliderValue, locale, fractionDigitsForStep(step))
+  ]);
 
   const slider = document.createElement('input');
   slider.id = createControlId('slider');
