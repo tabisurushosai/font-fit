@@ -1,14 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
 import { defaultSettings } from '../core/settings';
+import { createStorageAdapter } from './adapter';
 import { createChromeStorageAdapter } from './chromeStorage';
-import { STORAGE_KEYS, type FontFitStorageArea, type StorageItems, type StorageKey } from './types';
+import { STORAGE_KEYS, type FontFitStorageArea, type StorageItems, type StorageKeyQuery } from './types';
 
 function createMemoryStorageArea(initialItems: StorageItems = {}): FontFitStorageArea & { snapshot(): StorageItems } {
   let items: StorageItems = { ...initialItems };
 
   return {
-    async get(keys: StorageKey | StorageKey[]): Promise<StorageItems> {
+    async get(keys: StorageKeyQuery): Promise<StorageItems> {
       if (Array.isArray(keys)) {
         return Object.fromEntries(keys.map((key) => [key, items[key]])) as StorageItems;
       }
@@ -26,12 +27,12 @@ function createMemoryStorageArea(initialItems: StorageItems = {}): FontFitStorag
   };
 }
 
-describe('createChromeStorageAdapter', () => {
+describe('createStorageAdapter', () => {
   it('reads and writes settings through the portable storage area interface', async () => {
     const area = createMemoryStorageArea({
       [STORAGE_KEYS.settings]: { fontSize: 2 }
     });
-    const storage = createChromeStorageAdapter(area);
+    const storage = createStorageAdapter(area);
 
     expect(await storage.loadSettings()).toEqual({
       ...defaultSettings,
@@ -47,7 +48,7 @@ describe('createChromeStorageAdapter', () => {
       [STORAGE_KEYS.isPremium]: true,
       [STORAGE_KEYS.trialStartTs]: 123
     });
-    const storage = createChromeStorageAdapter(area);
+    const storage = createStorageAdapter(area);
 
     expect(await storage.loadPremiumState()).toEqual({
       isPremium: true,
@@ -64,7 +65,7 @@ describe('createChromeStorageAdapter', () => {
       [STORAGE_KEYS.presets]: presets,
       [STORAGE_KEYS.autoApplySites]: ['example.com']
     });
-    const storage = createChromeStorageAdapter(area);
+    const storage = createStorageAdapter(area);
 
     expect(await storage.loadPresets()).toEqual(presets);
     expect(await storage.loadAutoApplySites()).toEqual(['example.com']);
@@ -74,5 +75,19 @@ describe('createChromeStorageAdapter', () => {
 
     expect(area.snapshot()[STORAGE_KEYS.presets]).toEqual([]);
     expect(area.snapshot()[STORAGE_KEYS.autoApplySites]).toEqual(['docs.example']);
+  });
+});
+
+describe('createChromeStorageAdapter', () => {
+  it('uses the same portable storage area interface for an injected chrome area', async () => {
+    const area = createMemoryStorageArea({
+      [STORAGE_KEYS.settings]: { lineHeight: 2 }
+    });
+    const storage = createChromeStorageAdapter(area);
+
+    expect(await storage.loadSettings()).toEqual({
+      ...defaultSettings,
+      lineHeight: 2
+    });
   });
 });
