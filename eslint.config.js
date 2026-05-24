@@ -24,7 +24,8 @@ export default tseslint.config(
     }
   },
   {
-    files: ['src/storage/adapter.ts', 'src/storage/index.ts', 'src/storage/types.ts'],
+    files: ['src/storage/**/*.ts'],
+    ignores: ['src/storage/chromeStorage.ts'],
     rules: {
       'no-restricted-globals': [
         'error',

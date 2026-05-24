@@ -8,10 +8,10 @@ export const STORAGE_KEYS = {
   autoApplySites: 'autoApplySites'
 } as const;
 
-export type StorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
-export type StorageKeyQuery = StorageKey | StorageKey[];
+export type FontFitStorageKey = typeof STORAGE_KEYS[keyof typeof STORAGE_KEYS];
+export type FontFitStorageKeyQuery = FontFitStorageKey | FontFitStorageKey[];
 
-export type StorageItems = Partial<{
+export type FontFitStorageItems = Partial<{
   [STORAGE_KEYS.settings]: Partial<Settings>;
   [STORAGE_KEYS.isPremium]: boolean;
   [STORAGE_KEYS.trialStartTs]: number;
@@ -19,9 +19,9 @@ export type StorageItems = Partial<{
   [STORAGE_KEYS.autoApplySites]: string[];
 }>;
 
-export interface FontFitStorageArea {
-  get(keys: StorageKeyQuery): Promise<StorageItems>;
-  set(items: StorageItems): Promise<void>;
+export interface FontFitStoragePort {
+  get(keys: FontFitStorageKeyQuery): Promise<FontFitStorageItems>;
+  set(items: FontFitStorageItems): Promise<void>;
 }
 
 export interface FontFitStorage {
@@ -34,3 +34,8 @@ export interface FontFitStorage {
   loadAutoApplySites(): Promise<string[]>;
   saveAutoApplySites(sites: string[]): Promise<void>;
 }
+
+export type StorageKey = FontFitStorageKey;
+export type StorageKeyQuery = FontFitStorageKeyQuery;
+export type StorageItems = FontFitStorageItems;
+export type FontFitStorageArea = FontFitStoragePort;
