@@ -10,7 +10,8 @@
     --border: #c8bdac;
     --border-soft: #ded4c5;
     --text: #1f2933;
-    --muted: #334155;
+    --muted: #3f4f63;
+    --muted-strong: #28384a;
     --primary: #285548;
     --primary-strong: #1f4238;
     --danger-bg: #fde9e9;
@@ -36,11 +37,11 @@
   }
 
   .popup-shell {
-    padding: 18px 16px 16px;
+    padding: 20px 16px 16px;
   }
 
   #app-title {
-    margin: 0 0 12px;
+    margin: 0 0 14px;
     color: var(--text);
     font-size: 20px;
     font-weight: 700;
@@ -51,7 +52,7 @@
   .popup-panel {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
     padding: 16px;
     border: 1px solid var(--border);
     border-radius: 18px;
@@ -93,7 +94,7 @@
   .section {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
     padding: 14px;
     border: 1px solid var(--border-soft);
     background: var(--surface-soft);
@@ -152,7 +153,7 @@
   .section-title {
     display: block;
     margin-bottom: 0;
-    color: var(--muted);
+    color: var(--muted-strong);
     font-size: 12.5px;
     font-weight: 700;
     letter-spacing: 0.01em;
@@ -163,6 +164,13 @@
     color: var(--text);
     font-size: 13.5px;
     line-height: 1.35;
+  }
+
+  .section-description {
+    margin: -2px 0 2px;
+    color: var(--muted);
+    font-size: 12.5px;
+    line-height: 1.45;
   }
 
   .checkbox-label {
@@ -191,6 +199,10 @@
     color: var(--text);
   }
 
+  select:hover {
+    border-color: var(--primary);
+  }
+
   button {
     min-height: 44px;
     padding: 9px 13px;
@@ -203,7 +215,7 @@
   }
 
   button.secondary {
-    background: #fff;
+    background: var(--surface-strong);
     color: var(--primary);
   }
 
@@ -274,7 +286,7 @@
 
   .status-message {
     margin: 0;
-    padding: 10px 12px;
+    padding: 11px 12px;
     border: 1px solid #bde4ca;
     border-left-width: 4px;
     background: var(--success-bg);
@@ -299,9 +311,9 @@
   .empty-state,
   .app-loading {
     margin: 0;
-    padding: 14px;
+    padding: 14px 15px;
     border: 1px dashed var(--border);
-    background: var(--surface-muted);
+    background: var(--surface-strong);
     color: var(--muted);
     font-size: 13px;
     line-height: 1.5;
@@ -310,7 +322,7 @@
   .empty-state {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
   }
 
   .empty-state__title {

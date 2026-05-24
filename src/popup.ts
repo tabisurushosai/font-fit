@@ -171,7 +171,7 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   const settingsSection = document.createElement('section');
   settingsSection.className = 'section';
   const settingsTitle = createSectionTitle(chrome.i18n.getMessage('readingSettings'));
-  const settingsHelp = createVisuallyHiddenText(chrome.i18n.getMessage('readingSettingsHelp'), 'reading-settings-help');
+  const settingsHelp = createSectionDescription(chrome.i18n.getMessage('readingSettingsHelp'), 'reading-settings-help');
   settingsSection.setAttribute('aria-labelledby', settingsTitle.id);
   settingsSection.setAttribute('aria-describedby', settingsHelp.id);
   settingsSection.append(settingsTitle, settingsHelp);
@@ -247,7 +247,7 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   const presetContainer = document.createElement('div');
   presetContainer.className = 'section';
   const presetTitle = createSectionTitle(chrome.i18n.getMessage('presets'));
-  const presetHelp = createVisuallyHiddenText(chrome.i18n.getMessage('presetsHelp'), 'presets-help');
+  const presetHelp = createSectionDescription(chrome.i18n.getMessage('presetsHelp'), 'presets-help');
   presetContainer.setAttribute('role', 'group');
   presetContainer.setAttribute('aria-labelledby', presetTitle.id);
   presetContainer.setAttribute('aria-describedby', presetHelp.id);
@@ -461,6 +461,14 @@ function createSectionTitle(text: string): HTMLHeadingElement {
   title.className = 'section-title';
   title.textContent = text;
   return title;
+}
+
+function createSectionDescription(text: string, idPrefix: string): HTMLParagraphElement {
+  const description = document.createElement('p');
+  description.id = createControlId(idPrefix);
+  description.className = 'section-description';
+  description.textContent = text;
+  return description;
 }
 
 function createSliderSetting(label: string, min: number, max: number, step: number, value: number, locale: string, onChange: (val: number) => void): HTMLElement {
