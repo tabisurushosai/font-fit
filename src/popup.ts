@@ -1,7 +1,7 @@
 // popup.ts : 設定UI(フォント/行間/文字間/背景色/最大幅)。
 
 import { applyStyle, removeStyle } from './content';
-import { formatCurrency, formatFixedDecimal, formatInteger, fractionDigitsForStep } from './core/format';
+import { formatCurrency, formatFixedDecimal, formatInteger, formatShortDate, fractionDigitsForStep } from './core/format';
 import { FONT_STACKS, getPremiumStatus as resolvePremiumStatus, type PremiumStatus, type Settings } from './core/settings';
 import { createChromeStorageAdapter } from './storage/chromeStorage';
 
@@ -129,7 +129,10 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
   } else if (premiumStatus.isTrialing) {
     premiumBanner.classList.add('banner--info');
     const trialMessageKey = premiumStatus.daysLeft === 1 ? 'premiumTrialOne' : 'premiumTrialOther';
-    premiumBanner.textContent = chrome.i18n.getMessage(trialMessageKey, [formatInteger(premiumStatus.daysLeft, uiLocale)]);
+    premiumBanner.textContent = chrome.i18n.getMessage(trialMessageKey, [
+      formatInteger(premiumStatus.daysLeft, uiLocale),
+      formatShortDate(premiumStatus.trialEndsAt, uiLocale)
+    ]);
   } else {
     premiumBanner.classList.add('banner--success');
     premiumBanner.textContent = chrome.i18n.getMessage('premiumActive');
