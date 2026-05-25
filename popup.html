@@ -7,8 +7,8 @@
     --surface-strong: #ffffff;
     --surface-soft: #fbf7f0;
     --surface-muted: #eee6d8;
-    --border: #baad9b;
-    --border-soft: #ded4c5;
+    --border: #7f6f5d;
+    --border-soft: #97856f;
     --text: #1f2933;
     --muted: #3f4f63;
     --muted-strong: #28384a;
@@ -83,7 +83,9 @@
   .banner a {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     min-height: 44px;
+    min-width: 44px;
     margin-top: 4px;
     color: currentColor;
     font-weight: 700;
@@ -177,6 +179,7 @@
   .checkbox-label {
     width: 100%;
     min-height: 44px;
+    padding: 3px;
     margin-bottom: 0;
     display: flex;
     align-items: center;
@@ -206,6 +209,7 @@
 
   button {
     min-height: 44px;
+    min-width: 44px;
     padding: 9px 13px;
     border: 1px solid var(--primary);
     border-radius: 10px;
@@ -250,6 +254,13 @@
   input:focus-visible {
     outline: 3px solid var(--focus);
     outline-offset: 3px;
+    box-shadow: 0 0 0 5px rgb(91 33 182 / 16%);
+  }
+
+  .checkbox-label:focus-within {
+    outline: 3px solid var(--focus);
+    outline-offset: 3px;
+    border-radius: 10px;
     box-shadow: 0 0 0 5px rgb(91 33 182 / 16%);
   }
 
