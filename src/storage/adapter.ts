@@ -1,11 +1,24 @@
 import { mergeSettings, type PremiumState, type Preset, type Settings } from '../core/settings';
-import { STORAGE_KEYS, type FontFitStorage, type FontFitStoragePort } from './types';
+import {
+  STORAGE_KEYS,
+  type FontFitStorage,
+  type FontFitStorageKey,
+  type FontFitStoragePort,
+  type FontFitStorageValueMap
+} from './types';
+
+async function loadStoredValue<Key extends FontFitStorageKey>(
+  port: FontFitStoragePort,
+  key: Key
+): Promise<FontFitStorageValueMap[Key] | undefined> {
+  const data = await port.get(key);
+  return data[key];
+}
 
 export function createStorageAdapter(port: FontFitStoragePort): FontFitStorage {
   return {
     async loadSettings(): Promise<Settings> {
-      const data = await port.get(STORAGE_KEYS.settings);
-      return mergeSettings(data[STORAGE_KEYS.settings]);
+      return mergeSettings(await loadStoredValue(port, STORAGE_KEYS.settings));
     },
 
     async saveSettings(settings: Settings): Promise<void> {
@@ -28,8 +41,7 @@ export function createStorageAdapter(port: FontFitStoragePort): FontFitStorage {
     },
 
     async loadPresets(): Promise<Preset[]> {
-      const data = await port.get(STORAGE_KEYS.presets);
-      return data[STORAGE_KEYS.presets] || [];
+      return (await loadStoredValue(port, STORAGE_KEYS.presets)) || [];
     },
 
     async savePresets(presets: Preset[]): Promise<void> {
@@ -37,8 +49,7 @@ export function createStorageAdapter(port: FontFitStoragePort): FontFitStorage {
     },
 
     async loadAutoApplySites(): Promise<string[]> {
-      const data = await port.get(STORAGE_KEYS.autoApplySites);
-      return data[STORAGE_KEYS.autoApplySites] || [];
+      return (await loadStoredValue(port, STORAGE_KEYS.autoApplySites)) || [];
     },
 
     async saveAutoApplySites(sites: string[]): Promise<void> {
