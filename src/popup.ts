@@ -532,8 +532,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   const app = document.getElementById('app');
   localizeAppTitle();
   if (app) {
-    app.textContent = chrome.i18n.getMessage('loading');
+    app.innerHTML = '';
+    app.className = 'app-loading';
+    app.setAttribute('role', 'status');
     app.setAttribute('aria-busy', 'true');
+
+    const loadingTitle = document.createElement('strong');
+    loadingTitle.className = 'app-loading__title';
+    loadingTitle.textContent = chrome.i18n.getMessage('loading');
+
+    const loadingBody = document.createElement('span');
+    loadingBody.className = 'app-loading__body';
+    loadingBody.textContent = chrome.i18n.getMessage('extDesc');
+
+    app.append(loadingTitle, loadingBody);
   }
 
   const settings = await storage.loadSettings();
