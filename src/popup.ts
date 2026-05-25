@@ -163,7 +163,15 @@ async function createUI(settings: Settings, initialStatusMessage = ''): Promise<
     const onboardingTip = document.createElement('p');
     onboardingTip.className = 'onboarding-tip';
     onboardingTip.setAttribute('role', 'note');
-    onboardingTip.textContent = chrome.i18n.getMessage('onboardingTip');
+    const onboardingTipTitle = document.createElement('strong');
+    onboardingTipTitle.className = 'onboarding-tip__title';
+    onboardingTipTitle.textContent = chrome.i18n.getMessage('onboardingTipTitle');
+
+    const onboardingTipBody = document.createElement('span');
+    onboardingTipBody.className = 'onboarding-tip__body';
+    onboardingTipBody.textContent = chrome.i18n.getMessage('onboardingTip');
+
+    onboardingTip.append(onboardingTipTitle, onboardingTipBody);
     container.appendChild(onboardingTip);
   }
 
