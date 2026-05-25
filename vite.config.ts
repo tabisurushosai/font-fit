@@ -3,6 +3,7 @@ import { resolve } from "path";
 export default defineConfig({
   publicDir: "public",
   build: {
+    copyPublicDir: true,
     outDir: "dist",
     emptyOutDir: true,
     rollupOptions: {
