@@ -6,8 +6,8 @@
     --surface: #fffdfa;
     --surface-strong: #ffffff;
     --surface-soft: #fbf7f0;
-    --surface-muted: #f0eadf;
-    --border: #c8bdac;
+    --surface-muted: #eee6d8;
+    --border: #baad9b;
     --border-soft: #ded4c5;
     --text: #1f2933;
     --muted: #3f4f63;
@@ -27,7 +27,7 @@
   * { box-sizing: border-box; }
 
   body {
-    width: 372px;
+    width: 384px;
     margin: 0;
     background: var(--bg);
     color: var(--text);
@@ -37,13 +37,13 @@
   }
 
   .popup-shell {
-    padding: 20px 16px 16px;
+    padding: 22px 18px 18px;
   }
 
   #app-title {
-    margin: 0 0 14px;
+    margin: 0 0 12px;
     color: var(--text);
-    font-size: 20px;
+    font-size: 21px;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: 0.01em;
@@ -52,8 +52,8 @@
   .popup-panel {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 16px;
+    gap: 15px;
+    padding: 17px;
     border: 1px solid var(--border);
     border-radius: 18px;
     background: var(--surface);
@@ -70,7 +70,7 @@
   }
 
   .banner {
-    padding: 11px 12px;
+    padding: 12px 13px;
     border: 1px solid transparent;
     font-size: 13px;
     font-weight: 600;
@@ -94,8 +94,8 @@
   .section {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 14px;
+    gap: 12px;
+    padding: 15px;
     border: 1px solid var(--border-soft);
     background: var(--surface-soft);
   }
@@ -118,7 +118,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
-    padding: 11px;
+    padding: 12px;
     border: 1px solid var(--border-soft);
     border-radius: 12px;
     background: var(--surface-strong);
@@ -156,6 +156,7 @@
     color: var(--muted-strong);
     font-size: 12.5px;
     font-weight: 700;
+    line-height: 1.35;
     letter-spacing: 0.01em;
   }
 
@@ -167,7 +168,7 @@
   }
 
   .section-description {
-    margin: -2px 0 2px;
+    margin: -4px 0 2px;
     color: var(--muted);
     font-size: 12.5px;
     line-height: 1.45;
@@ -285,6 +286,9 @@
   }
 
   .status-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
     margin: 0;
     padding: 11px 12px;
     border: 1px solid #bde4ca;
@@ -294,6 +298,16 @@
     font-size: 13px;
     font-weight: 700;
     line-height: 1.45;
+  }
+
+  .status-message::before {
+    content: "";
+    width: 8px;
+    height: 8px;
+    margin-top: 0.45em;
+    border-radius: 999px;
+    background: currentColor;
+    flex: 0 0 auto;
   }
 
   .onboarding-tip {
@@ -323,7 +337,7 @@
   .empty-state,
   .app-loading {
     margin: 0;
-    padding: 14px 15px;
+    padding: 15px;
     border: 1px dashed var(--border);
     background: var(--surface-strong);
     color: var(--muted);
@@ -334,7 +348,7 @@
   .empty-state {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 7px;
   }
 
   .empty-state__title {
@@ -349,16 +363,31 @@
   }
 
   .app-loading {
-    min-height: 168px;
+    min-height: 182px;
     border-style: solid;
     border-radius: 16px;
     background: var(--surface);
     box-shadow: var(--shadow);
     display: flex;
+    flex-direction: column;
+    gap: 8px;
     align-items: center;
     justify-content: center;
-    font-weight: 700;
     text-align: center;
+  }
+
+  .app-loading__title {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .app-loading__body {
+    max-width: 28ch;
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.55;
   }
 </style></head>
 <body>
